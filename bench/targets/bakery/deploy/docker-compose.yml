@@ -1,0 +1,30 @@
+services:
+  orders-api:
+    build: ../orders-api
+    environment:
+      ORDERS_DB: /data/orders.db
+    volumes:
+      - orders-data:/data
+    privileged: true
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  storefront:
+    build: ../storefront
+    env_file: .env
+    ports:
+      - "127.0.0.1:3000:3000"
+    read_only: true
+    cap_drop:
+      - ALL
+
+  reporting-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+volumes:
+  orders-data:

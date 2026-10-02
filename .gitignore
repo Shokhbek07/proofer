@@ -1,0 +1,16 @@
+.DS_Store
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+.idea/
+
+# run outputs and downloaded data
+runs/
+data/cache/
+bench/external/
+
+# the brief is Safia's document, keep it out of a public repository
+ML_Engineer_CaseStudy.pdf

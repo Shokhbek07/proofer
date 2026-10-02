@@ -1,0 +1,336 @@
+# Ground truth for bench/targets/bakery.
+# This file lives outside the scanned tree so the agent can never read it.
+#
+# A weakness is located by `anchor`, a string that appears exactly once in `file`.
+# A finding matches when one of its cited spans falls within `radius` lines of it.
+# `fix` lists the replacements that produce the patched twin of that weakness,
+# and `patched_anchor` locates the same place once the fix is applied.
+
+target: bakery
+
+weaknesses:
+  - id: V01
+    title: SQL injection in staff order search
+    cwe: [CWE-89]
+    file: orders-api/app/orders.py
+    anchor: "WHERE u.email LIKE '%{term}%'"
+    patched_anchor: "\"WHERE u.email LIKE ? ORDER BY o.id DESC\","
+    radius: 4
+    fix:
+      - old: |2
+                  f"WHERE u.email LIKE '%{term}%' ORDER BY o.id DESC"
+        new: |2
+                  "WHERE u.email LIKE ? ORDER BY o.id DESC",
+                  (f"%{term}%",),
+
+  - id: V02
+    title: Any logged-in user can read any order by id
+    cwe: [CWE-639, CWE-284, CWE-285, CWE-862, CWE-863]
+    file: orders-api/app/orders.py
+    anchor: "def get_order(order_id):"
+    patched_anchor: "def get_order(order_id):"
+    radius: 5
+    fix:
+      - old: |2
+              order = get_db().execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+              if order is None:
+                  abort(404)
+              return jsonify(_row(order))
+        new: |2
+              order = get_db().execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+              if order is None or (order["user_id"] != g.user["uid"] and g.user["role"] != "staff"):
+                  abort(404)
+              return jsonify(_row(order))
+
+  - id: V03
+    title: Shell command built from the requested printer name
+    cwe: [CWE-78, CWE-77]
+    file: orders-api/app/printing.py
+    anchor: 'f"lp -d {printer} {ticket}", shell=True'
+    patched_anchor: "[\"lp\", \"-d\", config.PRINTERS[name], ticket]"
+    radius: 4
+    fix:
+      - old: |2
+              printer = request.get_json(force=True).get("printer", "KITCHEN_1")
+              ticket = f"/tmp/ticket-{order_id}.txt"
+              result = subprocess.run(
+                  f"lp -d {printer} {ticket}", shell=True, capture_output=True, text=True
+              )
+        new: |2
+              name = request.get_json(force=True).get("printer", "kitchen")
+              if name not in config.PRINTERS:
+                  abort(400)
+              ticket = f"/tmp/ticket-{order_id}.txt"
+              result = subprocess.run(
+                  ["lp", "-d", config.PRINTERS[name], ticket], capture_output=True, text=True
+              )
+
+  - id: V04
+    title: Invoice download path is not confined to the invoice directory
+    cwe: [CWE-22, CWE-23, CWE-73]
+    file: orders-api/app/invoices.py
+    anchor: 'path = os.path.join(config.INVOICE_DIR, str(g.user["uid"]), name)'
+    patched_anchor: "root = os.path.realpath(os.path.join(config.INVOICE_DIR, str(g.user[\"uid\"])))"
+    radius: 5
+    fix:
+      - old: |2
+              path = os.path.join(config.INVOICE_DIR, str(g.user["uid"]), name)
+              if not os.path.isfile(path):
+        new: |2
+              root = os.path.realpath(os.path.join(config.INVOICE_DIR, str(g.user["uid"])))
+              path = os.path.realpath(os.path.join(root, name))
+              if not path.startswith(root + os.sep) or not os.path.isfile(path):
+
+  - id: V05
+    title: Legacy cart cookie is unpickled
+    cwe: [CWE-502]
+    file: orders-api/app/cart.py
+    anchor: "pickle.loads(base64.b64decode(legacy))"
+    patched_anchor: "return jsonify([])"
+    radius: 4
+    fix:
+      - old: |2
+              # Carts saved by the old mobile app are still in the previous format.
+              legacy = request.cookies.get("cart")
+              if legacy:
+                  return jsonify(pickle.loads(base64.b64decode(legacy)))
+              return jsonify([])
+        new: |2
+              return jsonify([])
+      - old: "import pickle\n"
+        new: ""
+
+  - id: V06
+    title: Order quantity is not validated, so a negative quantity lowers the total
+    cwe: [CWE-20, CWE-840, CWE-841, CWE-1284, CWE-129]
+    file: orders-api/app/orders.py
+    anchor: 'qty = int(line["qty"])'
+    patched_anchor: "if qty < 1 or qty > 100:"
+    radius: 4
+    fix:
+      - old: |2
+                  qty = int(line["qty"])
+        new: |2
+                  qty = int(line["qty"])
+                  if qty < 1 or qty > 100:
+                      abort(400)
+
+  - id: V07
+    title: Token signing key is hardcoded in source
+    cwe: [CWE-798, CWE-321, CWE-259, CWE-547]
+    file: orders-api/app/config.py
+    anchor: 'SECRET_KEY = "safia-orders-2024-prod-key"'
+    patched_anchor: "SECRET_KEY = os.environ[\"ORDERS_SECRET_KEY\"]"
+    radius: 2
+    fix:
+      - old: 'SECRET_KEY = "safia-orders-2024-prod-key"'
+        new: 'SECRET_KEY = os.environ["ORDERS_SECRET_KEY"]'
+
+  - id: V08
+    title: Passwords are hashed with unsalted MD5
+    cwe: [CWE-916, CWE-327, CWE-328, CWE-759, CWE-326]
+    file: orders-api/app/auth.py
+    anchor: "return hashlib.md5(password.encode()).hexdigest()"
+    patched_anchor: "return generate_password_hash(password)"
+    radius: 3
+    fix:
+      - old: "import hashlib\n"
+        new: ""
+      - old: "from itsdangerous import BadSignature, URLSafeTimedSerializer\n"
+        new: "from itsdangerous import BadSignature, URLSafeTimedSerializer\nfrom werkzeug.security import check_password_hash, generate_password_hash\n"
+      - old: "    return hashlib.md5(password.encode()).hexdigest()"
+        new: "    return generate_password_hash(password)"
+      - old: '    if row is None or row["password_hash"] != hash_password(data["password"]):'
+        new: '    if row is None or not check_password_hash(row["password_hash"], data["password"]):'
+
+  - id: V09
+    title: Review text is written into the product page without escaping
+    cwe: [CWE-79, CWE-80, CWE-116]
+    file: storefront/src/routes/reviews.js
+    anchor: "</b>: ${r.text}</li>"
+    patched_anchor: "${escapeHtml(r.text)}</li>"
+    radius: 4
+    fix:
+      - old: "</b>: ${r.text}</li>"
+        new: "</b>: ${escapeHtml(r.text)}</li>"
+
+  - id: V10
+    title: Server fetches any URL supplied for a product photo
+    cwe: [CWE-918]
+    file: storefront/src/routes/media.js
+    anchor: "const upstream = await fetch(req.body.url);"
+    patched_anchor: "const upstream = await fetch(target, { redirect: 'error' });"
+    radius: 3
+    fix:
+      - old: "  const upstream = await fetch(req.body.url);"
+        new: |2
+              const target = new URL(String(req.body.url));
+              if (target.protocol !== 'https:' || !PHOTO_HOSTS.has(target.hostname)) {
+                return res.status(400).json({ error: 'host not allowed' });
+              }
+              const upstream = await fetch(target, { redirect: 'error' });
+      - old: "const PARTNER_FEEDS = {"
+        new: "const PHOTO_HOSTS = new Set(['images.partner.example']);\n\nconst PARTNER_FEEDS = {"
+
+  - id: V11
+    title: Session token is decoded without verifying its signature
+    cwe: [CWE-347, CWE-287, CWE-345, CWE-290]
+    file: storefront/src/middleware/auth.js
+    anchor: "const claims = jwt.decode(header.slice(7));"
+    patched_anchor: "claims = jwt.verify(header.slice(7), JWT_SECRET"
+    radius: 4
+    fix:
+      - old: "    const claims = jwt.decode(header.slice(7));"
+        new: |2
+                let claims = null;
+                try {
+                  claims = jwt.verify(header.slice(7), JWT_SECRET, { algorithms: ['HS256'] });
+                } catch (err) {
+                  claims = null;
+                }
+
+  - id: V12
+    title: Profile update copies every request field onto the user, including role
+    cwe: [CWE-915, CWE-269, CWE-284]
+    file: storefront/src/routes/profile.js
+    anchor: "Object.assign(req.user, req.body);"
+    patched_anchor: "if (typeof req.body.email === 'string')"
+    radius: 3
+    fix:
+      - old: "  Object.assign(req.user, req.body);"
+        new: "  if (typeof req.body.email === 'string') req.user.email = req.body.email;"
+
+  - id: V13
+    title: Orders container runs privileged
+    cwe: [CWE-250, CWE-269, CWE-732]
+    file: deploy/docker-compose.yml
+    anchor: "privileged: true"
+    patched_anchor: "privileged: false"
+    radius: 2
+    fix:
+      - old: "    privileged: true\n"
+        new: "    privileged: false\n"
+
+  - id: V14
+    title: Flask debugger is enabled on a server bound to all interfaces
+    cwe: [CWE-489, CWE-215, CWE-94, CWE-1188]
+    file: orders-api/run.py
+    anchor: "debug=True"
+    patched_anchor: "debug=False"
+    radius: 2
+    fix:
+      - old: "debug=True"
+        new: "debug=False"
+
+  - id: V15
+    title: Database uses a default password and is published on all interfaces
+    cwe: [CWE-798, CWE-1392, CWE-521, CWE-259, CWE-668, CWE-1393]
+    file: deploy/docker-compose.yml
+    anchor: "POSTGRES_PASSWORD: postgres"
+    patched_anchor: "POSTGRES_PASSWORD: ${REPORTING_DB_PASSWORD"
+    radius: 3
+    fix:
+      - old: "      POSTGRES_PASSWORD: postgres"
+        new: "      POSTGRES_PASSWORD: ${REPORTING_DB_PASSWORD:?set a password}"
+      - old: '      - "5432:5432"'
+        new: '      - "127.0.0.1:5432:5432"'
+
+  - id: V16
+    title: Secrets are committed in an environment file
+    cwe: [CWE-798, CWE-312, CWE-540, CWE-522, CWE-200]
+    file: deploy/.env
+    anchor: "PAYMENT_MERCHANT_KEY=mk_bakery_lab_7f3a9c2e1b8d4f60"
+    patched_anchor: "PAYMENT_MERCHANT_KEY="
+    radius: 2
+    fix:
+      - old: "JWT_SECRET=bakery-lab-jwt-3f9a1c7e5b2d"
+        new: "JWT_SECRET="
+      - old: "PAYMENT_MERCHANT_KEY=mk_bakery_lab_7f3a9c2e1b8d4f60"
+        new: "PAYMENT_MERCHANT_KEY="
+
+  - id: V17
+    title: Orders image runs as root
+    cwe: [CWE-250, CWE-269]
+    file: orders-api/Dockerfile
+    anchor: 'CMD ["python", "run.py"]'
+    patched_anchor: "USER app"
+    radius: 10
+    fix:
+      - old: "EXPOSE 8000\n"
+        new: "RUN useradd --system app && chown -R app /data\nUSER app\nEXPOSE 8000\n"
+
+# Safe code that a pattern matcher or a careless reviewer would flag.
+# A finding here is a false positive.
+decoys:
+  - id: D01
+    why_safe: The ORDER BY text comes from a fixed allowlist, and the user id is a bound parameter.
+    cwe: [CWE-89]
+    file: orders-api/app/orders.py
+    anchor: "ORDER BY {order_by}"
+    radius: 3
+  - id: D02
+    why_safe: Argument list with no shell, and the printer name is looked up in a fixed map.
+    cwe: [CWE-78, CWE-77]
+    file: orders-api/app/printing.py
+    anchor: '["lpstat", "-p", config.PRINTERS[name]]'
+    radius: 3
+  - id: D03
+    why_safe: MD5 is used as a cache validator for response bodies, not for security.
+    cwe: [CWE-327, CWE-328]
+    file: orders-api/app/invoices.py
+    anchor: "return hashlib.md5(body).hexdigest()"
+    radius: 1
+  - id: D04
+    why_safe: The resolved path must stay under the brand directory.
+    cwe: [CWE-22, CWE-23]
+    file: orders-api/app/invoices.py
+    anchor: "root = os.path.realpath(config.BRAND_DIR)"
+    radius: 3
+  - id: D05
+    why_safe: Product name and author are HTML-escaped before being written.
+    cwe: [CWE-79]
+    file: storefront/src/routes/reviews.js
+    anchor: "res.send(`<h1>${escapeHtml(product.name)}</h1>"
+    radius: 1
+  - id: D06
+    why_safe: The URL is chosen from a fixed map of partner feeds.
+    cwe: [CWE-918]
+    file: storefront/src/routes/media.js
+    anchor: "const upstream = await fetch(url);"
+    radius: 2
+  - id: D07
+    why_safe: yaml.safe_load does not construct arbitrary objects.
+    cwe: [CWE-502]
+    file: orders-api/app/config.py
+    anchor: "return yaml.safe_load(handle) or {}"
+    radius: 2
+  - id: D08
+    why_safe: Random choice of a featured product has no security role.
+    cwe: [CWE-330, CWE-338]
+    file: storefront/src/lib/specials.js
+    anchor: "Math.random()"
+    radius: 1
+  - id: D09
+    why_safe: Only two named fields are read and both are coerced to strings.
+    cwe: [CWE-915]
+    file: storefront/src/routes/profile.js
+    anchor: "const { street, city } = req.body;"
+    radius: 2
+  - id: D10
+    why_safe: The webhook token is verified with a pinned algorithm.
+    cwe: [CWE-347]
+    file: storefront/src/middleware/auth.js
+    anchor: "req.webhook = jwt.verify("
+    radius: 3
+  - id: D11
+    why_safe: The current cart cookie is parsed as JSON.
+    cwe: [CWE-502]
+    file: orders-api/app/cart.py
+    anchor: 'json.loads(base64.b64decode(request.cookies["cart_v2"]))'
+    radius: 1
+  - id: D12
+    why_safe: Cancel checks that the order belongs to the caller.
+    cwe: [CWE-639, CWE-862]
+    file: orders-api/app/orders.py
+    anchor: "def cancel_order(order_id):"
+    radius: 4

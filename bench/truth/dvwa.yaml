@@ -1,0 +1,44 @@
+# File-level ground truth for DVWA (https://github.com/digininja/DVWA, GPL-3.0).
+# DVWA is not vendored. Fetch it with scripts/fetch_dvwa.sh, which pins the commit below.
+#
+# Each module ships the same handler at several security levels.
+# `low.php` is the vulnerable version and `impossible.php` is the secure one, so
+# every module is a vulnerable and patched pair written by someone else.
+#
+# Modules were selected before any model was run on them, by one rule:
+# the weakness must be visible in low.php itself and belong to one clear class.
+# Excluded: fi, xss_d, authbypass (the weakness is in another file), javascript
+# (no secure version), captcha, csp, cryptography, api, bac (no single clear class).
+#
+# A module counts as detected when a finding in its file carries one of `cwe`.
+# Findings of other classes are counted separately and not judged: the secure
+# versions still contain unrelated weaknesses such as MD5 password hashing.
+
+target: dvwa
+commit: 43b0f8b13b7c824b08b228abfd868b5e4c110a5d
+source_dir: vulnerabilities
+vulnerable_file: source/low.php
+secure_file: source/impossible.php
+
+modules:
+  - id: sqli
+    cwe: [CWE-89, CWE-564, CWE-943]
+  - id: sqli_blind
+    cwe: [CWE-89, CWE-564, CWE-943]
+  - id: xss_r
+    cwe: [CWE-79, CWE-80, CWE-116]
+  - id: xss_s
+    cwe: [CWE-79, CWE-80, CWE-116]
+  - id: exec
+    cwe: [CWE-78, CWE-77, CWE-88]
+  - id: upload
+    cwe: [CWE-434, CWE-646, CWE-351]
+  - id: csrf
+    cwe: [CWE-352]
+  - id: brute
+    # low.php has no lockout and also builds its login query by concatenation.
+    cwe: [CWE-307, CWE-799, CWE-89]
+  - id: open_redirect
+    cwe: [CWE-601]
+  - id: weak_id
+    cwe: [CWE-330, CWE-331, CWE-334, CWE-338, CWE-340, CWE-341, CWE-342, CWE-384, CWE-6]
