@@ -5,8 +5,8 @@ A local AI security review agent, built for the Safia ML Engineer case study.
 Proofer reviews a codebase on your own machine with a local model and reports security weaknesses.
 Its central idea is that a small local model is a weak oracle but a useful hypothesis generator, so the system earns trust through evidence and verification instead of model confidence.
 
-Status: work in progress.
-See `docs/DECISIONS.md` for what is settled and why, and `docs/EXPERIMENTS.md` for what was measured, including what failed.
+Start with `REPORT.md`: everything that was built, measured and decided, including the failed experiments and a machine crash.
+`docs/DECISIONS.md` and `docs/EXPERIMENTS.md` are the working logs it is written from, and `results/` holds every raw result file.
 
 ## How it works
 

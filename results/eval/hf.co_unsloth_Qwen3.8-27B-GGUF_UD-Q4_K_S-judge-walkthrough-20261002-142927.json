@@ -1,0 +1,796 @@
+{
+  "summary": {
+    "model": "hf.co/unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_S",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "think": "off",
+    "temperature": 0.0,
+    "repeats": 1,
+    "recall": 0.941,
+    "precision": 0.941,
+    "decoys_flagged": 0.0,
+    "unlisted": 1.0,
+    "patched_still_flagged": 2.0,
+    "pair_accuracy": 0.824,
+    "discarded_bad_citation": 0.0,
+    "seconds_per_scan": 1441.7,
+    "recall_per_run": [
+      0.941
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "vulnerable": {
+        "recall": 0.941,
+        "precision": 0.941,
+        "found": [
+          "V01",
+          "V02",
+          "V03",
+          "V04",
+          "V05",
+          "V07",
+          "V08",
+          "V09",
+          "V10",
+          "V11",
+          "V12",
+          "V13",
+          "V14",
+          "V15",
+          "V16",
+          "V17"
+        ],
+        "missed_count": 1,
+        "decoys_flagged": [],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 17,
+        "decoys": 12,
+        "patched": 0,
+        "leads": 20,
+        "findings": 19,
+        "discarded_bad_citation": 0,
+        "seconds": 1441.7,
+        "prompt_tokens": 16729,
+        "completion_tokens": 9640,
+        "errors": []
+      },
+      "patched": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "found": [],
+        "missed_count": 0,
+        "decoys_flagged": [],
+        "patched_still_flagged": [
+          "V12",
+          "V16"
+        ],
+        "unlisted": 0,
+        "weaknesses": 0,
+        "decoys": 12,
+        "patched": 17,
+        "leads": 20,
+        "findings": 2,
+        "discarded_bad_citation": 0,
+        "seconds": 710.0,
+        "prompt_tokens": 16725,
+        "completion_tokens": 4392,
+        "errors": []
+      },
+      "pair_accuracy": 0.824,
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "Privileged Container",
+          "cwe": "CWE-250",
+          "severity": "high",
+          "summary": "Container runs with privileged mode, allowing host escape.",
+          "reasoning": "The `orders-api` container is run with `privileged: true`, which grants it full access to all host devices and kernel capabilities. This is a severe violation of least privilege and allows a compromised container to easily escape to the host system. The service should run with minimal privileges and specific capabilities if needed.",
+          "remediation": "Remove `privileged: true` from the `orders-api` service. If specific capabilities are required, use `cap_add` to grant only the necessary ones. Ensure the container runs as a non-root user if possible.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "privileged: true",
+              "role": "missing_check"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Hardcoded Weak Credentials",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "Hardcoded weak database credentials.",
+          "reasoning": "The `reporting-db` service uses hardcoded, default credentials (`postgres`/`postgres`). These are weak and well-known, making the database vulnerable to unauthorized access. The credentials should be stored in a secure environment variable or secret manager, and a strong, unique password should be used.",
+          "remediation": "Replace the hardcoded `POSTGRES_PASSWORD` with a strong, unique password stored in an environment variable or secret manager. Avoid using default credentials.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "POSTGRES_PASSWORD: postgres",
+              "role": "missing_check"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Unrestricted Network Exposure",
+          "cwe": "CWE-668",
+          "severity": "medium",
+          "summary": "Database port exposed to all network interfaces.",
+          "reasoning": "The `reporting-db` service exposes port 5432 to all network interfaces (`\"5432:5432\"`), making the database accessible from the network. Combined with weak credentials, this significantly increases the risk of unauthorized access. The port should be bound to localhost (`\"127.0.0.1:5432:5432\"`) or not exposed at all if not needed.",
+          "remediation": "Bind the database port to localhost (`\"127.0.0.1:5432:5432\"`) or remove the port exposure if the database is only accessed internally by other services.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 27,
+              "end_line": 27,
+              "quote": "\"5432:5432\"",
+              "role": "missing_check"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Weak password hashing",
+          "cwe": "CWE-328",
+          "severity": "high",
+          "summary": "Weak password hashing using MD5",
+          "reasoning": "The function hash_password uses MD5 to hash user passwords. MD5 is a broken cryptographic hash function that is computationally fast, making it susceptible to brute-force and rainbow table attacks. It should be replaced with a slow, salted hashing algorithm like bcrypt, scrypt, or Argon2.",
+          "remediation": "Replace hashlib.md5 with a secure password hashing library such as bcrypt, passlib, or werkzeug.security.generate_password_hash.",
+          "evidence": [
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "    return hashlib.md5(password.encode()).hexdigest()",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "Timing attack vulnerability in password comparison",
+          "cwe": "CWE-208",
+          "severity": "medium",
+          "summary": "Non-constant-time password hash comparison",
+          "reasoning": "The login handler compares the stored password hash with the computed hash using the != operator. This comparison is not constant-time, which can lead to timing attacks that allow an attacker to deduce the correct password hash byte by byte.",
+          "remediation": "Use a constant-time comparison function such as hmac.compare_digest() to compare the password hashes.",
+          "evidence": [
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 66,
+              "end_line": 66,
+              "quote": "    if row is None or row[\"password_hash\"] != hash_password(data[\"password\"]):",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Insecure Deserialization via Pickle",
+          "cwe": "CWE-502",
+          "severity": "critical",
+          "summary": "Unsafe deserialization of untrusted cookie data via `pickle.loads` allows remote code execution.",
+          "reasoning": "The `load_cart` handler reads the `cart` cookie directly from the untrusted request and passes its base64-decoded value to `pickle.loads`. Because `pickle` deserialization can execute arbitrary code embedded in the payload, an attacker can set a malicious `cart` cookie to achieve remote code execution on the server. There is no authentication, signature verification, or safe deserialization mechanism protecting this path.",
+          "remediation": "Remove the legacy `pickle` deserialization path entirely. If backward compatibility is required, migrate old clients to the JSON-based `cart_v2` cookie, or use a safe serialization format (e.g., JSON) for the legacy cookie as well. Never deserialize untrusted data with `pickle`.",
+          "evidence": [
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 31,
+              "end_line": 31,
+              "quote": "        return jsonify(pickle.loads(base64.b64decode(legacy)))",
+              "role": "sink"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "    legacy = request.cookies.get(\"cart\")",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "Path Traversal in Invoice Download",
+          "cwe": "CWE-22",
+          "severity": "high",
+          "summary": "Path traversal vulnerability in download_invoice allows authenticated users to access arbitrary files by manipulating the 'name' parameter.",
+          "reasoning": "The 'name' parameter is taken directly from the query string and used in os.path.join without any sanitization or validation to prevent path traversal. An authenticated user could pass a name like '../../other_user/invoice.pdf' to access files outside their own directory. The code does not verify that the resolved path is within the expected user directory.",
+          "remediation": "Validate that the resolved path is within the expected user directory. Use os.path.realpath and check that the path starts with the expected prefix, similar to the brand_asset handler. For example: root = os.path.realpath(os.path.join(config.INVOICE_DIR, str(g.user['uid']))); path = os.path.realpath(os.path.join(root, name)); if not path.startswith(root + os.sep) or not os.path.isfile(path): abort(404)",
+          "evidence": [
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 32,
+              "end_line": 32,
+              "quote": "path = os.path.join(config.INVOICE_DIR, str(g.user[\"uid\"]), name)",
+              "role": "sink"
+            },
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 31,
+              "end_line": 31,
+              "quote": "name = request.args.get(\"name\", \"\")",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "Command injection in print_ticket endpoint",
+          "cwe": "CWE-78",
+          "severity": "high",
+          "summary": "Command injection via unvalidated 'printer' parameter in shell command",
+          "reasoning": "The 'printer' variable is read directly from the untrusted JSON request body and interpolated into a shell command string executed with shell=True. An attacker with staff access can supply a malicious 'printer' value (e.g., \"$(malicious_command)\") to achieve arbitrary command execution. There is no validation, allowlist, or encoding applied to the 'printer' value before it reaches the shell.",
+          "remediation": "Use a list argument for subprocess.run to avoid shell interpretation, and validate the 'printer' value against a known allowlist (e.g., config.PRINTERS) before use. Example: validate printer against config.PRINTERS, then call subprocess.run([\"lp\", \"-d\", printer, ticket], ...)",
+          "evidence": [
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 27,
+              "end_line": 29,
+              "quote": "    result = subprocess.run(\n        f\"lp -d {printer} {ticket}\", shell=True, capture_output=True, text=True\n    )",
+              "role": "sink"
+            },
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "    printer = request.get_json(force=True).get(\"printer\", \"KITCHEN_1\")",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "SSRF in POST /admin/products/:id/photo",
+          "cwe": "CWE-918",
+          "severity": "high",
+          "summary": "Server-Side Request Forgery (SSRF) via user-controlled URL in fetch()",
+          "reasoning": "The endpoint accepts a user-supplied URL in `req.body.url` and passes it directly to `fetch()` without any validation or allowlist. Although restricted to staff users, this allows Server-Side Request Forgery (SSRF), enabling attackers to probe internal network resources, access cloud metadata endpoints, or exfiltrate data via internal services.",
+          "remediation": "Validate the URL against a strict allowlist of permitted domains or schemes. Alternatively, use a proxy service that restricts outbound requests to specific external domains. Never pass user-controlled URLs directly to `fetch()`.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/media.js",
+              "start_line": 20,
+              "end_line": 20,
+              "quote": "const upstream = await fetch(req.body.url);",
+              "role": "sink"
+            },
+            {
+              "path": "storefront/src/routes/media.js",
+              "start_line": 19,
+              "end_line": 19,
+              "quote": "router.post('/admin/products/:id/photo', requireStaff, async (req, res) => {",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F010",
+          "title": "Mass Assignment in PATCH /profile",
+          "cwe": "CWE-915",
+          "severity": "high",
+          "summary": "Mass assignment vulnerability in PATCH /profile allows users to modify arbitrary user properties including sensitive fields like role.",
+          "reasoning": "The PATCH /profile endpoint uses Object.assign to merge the entire request body into the user object. This is a mass assignment vulnerability because it allows an authenticated user to modify any property of their user object, including sensitive fields like role, isAdmin, or id, which should not be user-editable. There is no allowlist or validation to restrict which fields can be updated.",
+          "remediation": "Use an allowlist of fields that can be updated (e.g., name, email) and only assign those specific fields from req.body to req.user, or use a validation library to whitelist allowed properties.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/profile.js",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "  Object.assign(req.user, req.body);",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F011",
+          "title": "Hardcoded JWT Secret",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "Hardcoded JWT secret in environment file",
+          "reasoning": "The JWT secret is hardcoded in the `.env` file which is part of the repository. This allows anyone with access to the code to forge authentication tokens, bypassing the authentication mechanism entirely.",
+          "remediation": "Remove the hardcoded secret from the file. Use a secret management solution (e.g., AWS Secrets Manager, HashiCorp Vault) or inject the secret via environment variables at deployment time that are not stored in version control.",
+          "evidence": [
+            {
+              "path": "deploy/.env",
+              "start_line": 2,
+              "end_line": 2,
+              "quote": "JWT_SECRET=bakery-lab-jwt-3f9a1c7e5b2d",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F012",
+          "title": "Hardcoded Payment Merchant Key",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "Hardcoded payment merchant key in environment file",
+          "reasoning": "The payment merchant key is hardcoded in the `.env` file. Exposure of this key can lead to financial fraud or unauthorized access to payment processing systems.",
+          "remediation": "Remove the hardcoded key from the file. Use a secret management solution or inject the key via environment variables at deployment time that are not stored in version control.",
+          "evidence": [
+            {
+              "path": "deploy/.env",
+              "start_line": 3,
+              "end_line": 3,
+              "quote": "PAYMENT_MERCHANT_KEY=mk_bakery_lab_7f3a9c2e1b8d4f60",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F013",
+          "title": "Hardcoded Secret Key",
+          "cwe": "CWE-798",
+          "severity": "critical",
+          "summary": "Hardcoded secret key in configuration file.",
+          "reasoning": "The `SECRET_KEY` is hardcoded directly in the source code. This is a critical security weakness because the secret is exposed to anyone who can access the codebase or the deployed application. It should be loaded from an environment variable or a secure secret management system to prevent unauthorized access and token forgery.",
+          "remediation": "Replace the hardcoded `SECRET_KEY` with a value loaded from an environment variable, e.g., `SECRET_KEY = os.environ.get(\"SECRET_KEY\")`. Ensure the environment variable is set securely in the deployment environment and is not committed to version control.",
+          "evidence": [
+            {
+              "path": "orders-api/app/config.py",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "SECRET_KEY = \"safia-orders-2024-prod-key\"",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F014",
+          "title": "Debug mode enabled in production configuration",
+          "cwe": "CWE-489",
+          "severity": "critical",
+          "summary": "Flask application runs with debug mode enabled and bound to all network interfaces, allowing remote code execution via the Werkzeug debugger.",
+          "reasoning": "The application is run with `debug=True` and bound to `0.0.0.0`. Enabling debug mode in a production or exposed environment allows an attacker to trigger an exception and then use the Werkzeug debugger to execute arbitrary code on the server. Additionally, binding to `0.0.0.0` exposes the service to all network interfaces, increasing the attack surface. This is a critical security vulnerability.",
+          "remediation": "Set `debug=False` for production environments. Use a proper WSGI server (like Gunicorn or uWSGI) instead of the built-in development server. Bind to `127.0.0.1` if the application is only intended for local access, or ensure proper authentication and authorization are in place if it must be exposed.",
+          "evidence": [
+            {
+              "path": "orders-api/run.py",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "    app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F015",
+          "title": "Unverified JWT in attachUser middleware",
+          "cwe": "CWE-347",
+          "severity": "critical",
+          "summary": "Authentication bypass due to use of jwt.decode instead of jwt.verify in attachUser middleware.",
+          "reasoning": "The attachUser middleware uses jwt.decode instead of jwt.verify to process the Bearer token. jwt.decode does not verify the token's signature, allowing an attacker to forge a token with any 'sub' claim. This forged token is then used to look up a user in the store and attach it to req.user, effectively bypassing authentication. The requireUser and requireStaff middleware rely on req.user being set correctly, so they are also bypassed. This is a critical authentication bypass vulnerability.",
+          "remediation": "Replace jwt.decode with jwt.verify, passing the JWT_SECRET and specifying allowed algorithms (e.g., { algorithms: ['HS256'] }). This ensures the token's signature is validated before trusting its claims.",
+          "evidence": [
+            {
+              "path": "storefront/src/middleware/auth.js",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "const claims = jwt.decode(header.slice(7));",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F016",
+          "title": "SQL Injection in search_orders",
+          "cwe": "CWE-89",
+          "severity": "high",
+          "summary": "SQL injection in search_orders endpoint due to unsanitized user input in f-string.",
+          "reasoning": "The 'term' input from the query string is directly concatenated into the SQL query via an f-string. This allows an attacker to inject arbitrary SQL commands, such as extracting data from other tables or bypassing authentication checks.",
+          "remediation": "Use parameterized queries for the LIKE clause. For example: `f\"WHERE u.email LIKE ? ORDER BY o.id DESC\"` with parameters `('%' + term + '%',)`. Alternatively, use a safe string formatting method that escapes SQL wildcards and special characters.",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 36,
+              "end_line": 40,
+              "quote": "    term = request.args.get(\"customer\", \"\")\n    rows = get_db().execute(\n        \"SELECT o.* FROM orders o JOIN users u ON u.id = o.user_id \"\n        f\"WHERE u.email LIKE '%{term}%' ORDER BY o.id DESC\"\n    ).fetchall()",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F017",
+          "title": "IDOR in get_order",
+          "cwe": "CWE-639",
+          "severity": "medium",
+          "summary": "Insecure Direct Object Reference (IDOR) in get_order endpoint.",
+          "reasoning": "The endpoint retrieves an order by ID but does not check if the order belongs to the currently authenticated user. This allows any logged-in user to access any order by iterating through IDs (Insecure Direct Object Reference).",
+          "remediation": "Add a check to ensure the order's user_id matches the current user's uid. For example: `if order is None or order['user_id'] != g.user['uid']: abort(404)`.",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 46,
+              "end_line": 50,
+              "quote": "def get_order(order_id):\n    order = get_db().execute(\"SELECT * FROM orders WHERE id = ?\", (order_id,)).fetchone()\n    if order is None:\n        abort(404)\n    return jsonify(_row(order))",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F018",
+          "title": "Unescaped user input in review rendering",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "Stored Cross-Site Scripting (XSS) via unescaped review text",
+          "reasoning": "The `text` field from user input (line 25) is stored in the database and later rendered in the GET handler (line 15) without HTML escaping. While `author` is escaped, `text` is inserted directly into the HTML string, allowing an attacker to inject scripts or HTML tags that will execute in the browser of any user viewing the product reviews.",
+          "remediation": "Apply `escapeHtml` to the `r.text` field in the GET handler, or ensure the template engine used for rendering automatically escapes variables.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/reviews.js",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": ".map((r) => `<li><b>${escapeHtml(r.author)}</b>: ${r.text}</li>`)",
+              "role": "sink"
+            },
+            {
+              "path": "storefront/src/routes/reviews.js",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "text: String(req.body.text || ''),",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F019",
+          "title": "Application runs as root",
+          "cwe": "CWE-250",
+          "severity": "medium",
+          "summary": "Container runs as root due to missing USER directive",
+          "reasoning": "The Dockerfile does not specify a `USER` directive. Consequently, the application defined by `CMD [\"python\", \"run.py\"]` will run as the `root` user inside the container. Running an application as root violates the principle of least privilege and increases the impact of a potential container escape or application compromise. A non-root user should be created and specified via `USER` before the `CMD`.",
+          "remediation": "Add a `USER` directive to run the application as a non-root user. For example:\n\n```dockerfile\nRUN useradd -m appuser\nUSER appuser\nCMD [\"python\", \"run.py\"]\n```",
+          "evidence": [
+            {
+              "path": "orders-api/Dockerfile",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "CMD [\"python\", \"run.py\"]",
+              "role": "missing_check"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ],
+      "findings_patched": [
+        {
+          "id": "F001",
+          "title": "Missing email validation and uniqueness check on profile update",
+          "cwe": "CWE-20",
+          "severity": "medium",
+          "summary": "Unvalidated email update allows arbitrary string assignment and potential account takeover.",
+          "reasoning": "The PATCH /profile endpoint allows an authenticated user to change their email address to any arbitrary string. There is no validation of the email format (e.g., using a regex or a library like validator.js) and no check to ensure the new email is not already associated with another account. This can lead to account takeover if the system uses email for password resets, or data integrity issues if the database has a unique constraint on email and the update fails silently or causes an error.",
+          "remediation": "Validate the email format using a standard library (e.g., validator.isEmail) and check the database to ensure the new email is not already in use before updating the user record.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/profile.js",
+              "start_line": 11,
+              "end_line": 14,
+              "quote": "router.patch('/profile', requireUser, (req, res) => {\n  if (typeof req.body.email === 'string') req.user.email = req.body.email;\n  res.json(req.user);\n});",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "storefront/src/routes/profile.js: lines corrected from 11-13"
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Empty Sensitive Credentials in Environment Configuration",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "Empty JWT_SECRET and PAYMENT_MERCHANT_KEY allow authentication bypass and payment manipulation.",
+          "reasoning": "The file defines `JWT_SECRET` and `PAYMENT_MERCHANT_KEY` with empty values. If the application does not explicitly fail to start or reject requests when these are empty, it will operate with a known, empty secret. This allows an attacker to forge valid JWTs (authentication bypass) or potentially manipulate payment data, as the secret is effectively public (empty string). This is a use of hard-coded credentials (the empty string) that are weak and predictable.",
+          "remediation": "Ensure the application validates that `JWT_SECRET` and `PAYMENT_MERCHANT_KEY` are non-empty and sufficiently complex at startup. If they are empty, the application should refuse to start. Use a secret management solution to inject these values securely in production environments.",
+          "evidence": [
+            {
+              "path": "deploy/.env",
+              "start_line": 2,
+              "end_line": 3,
+              "quote": "JWT_SECRET=\nPAYMENT_MERCHANT_KEY=",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

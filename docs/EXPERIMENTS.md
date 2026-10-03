@@ -1,6 +1,7 @@
 # Experiments
 
 One entry per experiment: question, setup, result, what was learned.
+`REPORT.md` summarises all of them, and `results/` holds the raw files.
 Failed and inconclusive experiments stay in this file.
 
 ## E0 - Environment baseline (2026-10-02)
@@ -56,7 +57,7 @@ Learned:
 
 Setup: one file per call with imported helper definitions, schema-constrained JSON, reasoning off, temperature 0, one run each.
 Same prompt for both models.
-Raw results are in `runs/eval/`.
+Raw results are in `results/eval/` (index in `results/README.md`).
 
 | Configuration | recall | precision | decoys flagged | patched still flagged | pair accuracy | seconds per scan |
 |---|---|---|---|---|---|---|
@@ -462,4 +463,4 @@ Learned:
 - To try again: train on varied code (several benchmarks and real projects, with secure twins), keep the answer format through constrained decoding instead of teaching it, and choose checkpoints on an out-of-distribution validation set.
 
 Reproduce: `experiments/finetune/build_dataset.py`, then `experiments/finetune/run.sh` and `experiments/finetune/run_extra.sh`.
-Raw results are in `runs/finetune/` and `runs/eval/`.
+Raw results are in `results/finetune/` and `results/eval/`.

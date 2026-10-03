@@ -40,6 +40,8 @@ Multi-language source review (Python, JavaScript and TypeScript first, others th
 
 ## Where things are recorded
 
+- `REPORT.md` is the full report for reviewers, written from the two logs below; keep it in step with them.
+- `results/` holds the raw result files behind every reported number, copied from the ignored `runs/`.
 - `docs/DECISIONS.md` holds settled and open decisions with their reasons.
 - `docs/EXPERIMENTS.md` holds each experiment, including the ones that failed.
 - Update both as work proceeds; the final submission explanation is written from them.
@@ -48,3 +50,4 @@ Multi-language source review (Python, JavaScript and TypeScript first, others th
 
 - Do not commit, push, or publish without explicit authorization from Shokhbek.
 - Report evaluation numbers exactly as measured, including bad ones.
+- Load one large model at a time: on 2026-10-03 three at once exhausted the 24 GB and panicked the kernel (REPORT.md section 8).

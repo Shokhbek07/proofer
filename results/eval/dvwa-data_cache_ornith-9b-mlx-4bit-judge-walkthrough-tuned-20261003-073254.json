@@ -1,0 +1,246 @@
+{
+  "summary": {
+    "target": "dvwa",
+    "model": "data/cache/ornith-9b-mlx-4bit",
+    "backend": "mlx",
+    "adapter": "data/finetune/adapter",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "temperature": 0.0,
+    "repeats": 1,
+    "modules": 10,
+    "detected": 1.0,
+    "secure_flagged": 1.0,
+    "pair_accuracy": 0.0,
+    "other_findings_vulnerable": 1.0,
+    "other_findings_secure": 1.0,
+    "seconds_per_scan": 218.5,
+    "detected_per_run": [
+      1
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "detected": [
+        "exec"
+      ],
+      "missed": [
+        "brute",
+        "csrf",
+        "open_redirect",
+        "sqli",
+        "sqli_blind",
+        "upload",
+        "weak_id",
+        "xss_r",
+        "xss_s"
+      ],
+      "secure_flagged": [
+        "exec"
+      ],
+      "pair_correct": [],
+      "other_findings_vulnerable": 1,
+      "other_findings_secure": 1,
+      "stats_vulnerable": {
+        "leads": 10,
+        "findings": 2,
+        "discarded_bad_citation": 1,
+        "seconds": 218.5,
+        "prompt_tokens": 8477,
+        "completion_tokens": 7088,
+        "errors": [
+          "brute/handler.php: model did not return valid JSON",
+          "open_redirect/handler.php: model did not return valid JSON",
+          "sqli/handler.php: model did not return valid JSON",
+          "xss_s/handler.php: output budget exhausted before an answer",
+          "semgrep failed: Fatal error: exception Invalid_argument: \"\": invalid path\nRaised at Stdlib.invalid_arg in file \"stdlib.ml\", line 30, characters 20-45\nCalled from Ca_certs.detect_one in file \"lib/ca_certs.ml\", line 13, characters 14-26\nCalled from Ca_certs.trust_anchors in file \"lib/ca_certs.ml\", line 153, character"
+        ]
+      },
+      "stats_secure": {
+        "leads": 10,
+        "findings": 2,
+        "discarded_bad_citation": 0,
+        "seconds": 90.1,
+        "prompt_tokens": 11616,
+        "completion_tokens": 2118,
+        "errors": [
+          "semgrep failed: Fatal error: exception Invalid_argument: \"\": invalid path\nRaised at Stdlib.invalid_arg in file \"stdlib.ml\", line 30, characters 20-45\nCalled from Ca_certs.detect_one in file \"lib/ca_certs.ml\", line 13, characters 14-26\nCalled from Ca_certs.trust_anchors in file \"lib/ca_certs.ml\", line 153, character"
+        ]
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "OS Command Injection",
+          "cwe": "CWE-78",
+          "severity": "critical",
+          "summary": "The application takes user-supplied input from the `ip` field and interpolates it directly into a shell command string executed via `shell_exec`. An attacker can inject shell metacharacters (e.g., `;`, `&`, `|`) to execute arbitrary commands on the host system.",
+          "reasoning": "The variable `$target` is populated from `$_REQUEST['ip']` (line 5). This value is then concatenated into a string `ping  -c 4 $target` (line 14) and executed via `shell_exec` (line 14). Since the input is not validated against an allowlist or escaped for shell metacharacters, an attacker can break out of the `ping` command and execute additional commands.",
+          "remediation": "Use the `exec` function (or `subprocess`/`os.system` on Windows) instead of `shell_exec` to execute commands without a shell, or use a list of arguments. If you must use `shell_exec`, strictly validate the input against a source",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$target = $_REQUEST[ 'ip' ];",
+              "role": "source"
+            },
+            {
+              "path": "exec/handler.php",
+              "start_line": 14,
+              "end_line": 14,
+              "quote": "$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Path Traversal via Untrusted Upload Filename",
+          "cwe": "CWE-22",
+          "severity": "high",
+          "summary": "The application uses an untrusted filename in a path traversal attack to upload arbitrary files to the server.",
+          "reasoning": "The code constructs a file path by concatenating a hardcoded string with the untrusted `name` field from a file upload. An attacker can provide a name like `../etc/passwd` to escape the intended directory.",
+          "remediation": "Validate the input filename against an allowlist of safe characters or use `path.basename()` to ensure the filename does not contain directory traversal sequences.",
+          "evidence": [
+            {
+              "path": "upload/handler.php",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "$target_path .= basename( $_FILES[ 'uploaded' ][ 'name' ] );",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        }
+      ],
+      "findings_secure": [
+        {
+          "id": "F001",
+          "title": "Use of weak cryptographic hash algorithm",
+          "cwe": "CWE-328",
+          "severity": "low",
+          "summary": "The application uses the MD5 hashing algorithm, which is cryptographically broken and should not be used for password storage or any security-sensitive hashing.",
+          "reasoning": "The code uses `md5()` on the `password_new` variable (line 29) and on the `password_current` variable (line 15). MD5 is a cryptographic hash function that is considered cryptographically broken and is vulnerable to collision attacks. It should not be used for passwords or any security-sensitive data.",
+          "remediation": "Use a stronger, more modern password hashing function such as Argon2 or bcrypt, or use a password manager's recommended functions.",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "\u00a0 \u00a0 \u00a0 \u00a0 $pass_new = md5( $pass_new );",
+              "role": "source"
+            },
+            {
+              "path": "csrf/handler.php",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "\u00a0 \u00a0 \u00a0 \u00a0 $pass_curr = md5( $pass_curr );",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "OS Command Injection",
+          "cwe": "CWE-78",
+          "severity": "critical",
+          "summary": "The application constructs a shell command using untrusted input from the `ip` parameter and executes it via `shell_exec`. An attacker can inject shell metacharacters (e.g., `;`, `&`, `|`) to execute arbitrary commands on the host system.",
+          "reasoning": "The variable `$target` is constructed from `$_REQUEST[ 'ip' ]` (line 8) and is used directly in a string concatenation to build a command string for `shell_exec` (lines 22 and 26). Since the input is not validated against an allowlist of valid IP addresses, an attacker can provide a string like `127.0.0.1; touch /tmp/pwned` and the `; touch /tmp/pwned` part will be executed as a separate command.",
+          "remediation": "Use a dedicated IP validation function or strictly validate the input against a regex for valid IP addresses. If you must use shell execution, use the `exec()` function with a list of arguments rather than a string, or use the `subprocess` module to safely pass arguments to external programs.",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "$target = $_REQUEST[ 'ip' ];",
+              "role": "source"
+            },
+            {
+              "path": "exec/handler.php",
+              "start_line": 22,
+              "end_line": 22,
+              "quote": "$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+== repeat 1/1: vulnerable versions
+[1/10] csrf/handler.php
+      0 kept, 0 discarded, 17s
+[2/10] brute/handler.php
+      3 kept, 0 discarded, 29s
+[3/10] exec/handler.php
+      0 kept, 0 discarded, 18s
+[4/10] open_redirect/handler.php
+      1 kept, 0 discarded, 16s
+[5/10] sqli/handler.php
+      1 kept, 0 discarded, 24s
+[6/10] sqli_blind/handler.php
+      0 kept, 0 discarded, 20s
+[7/10] upload/handler.php
+      1 kept, 0 discarded, 12s
+[8/10] xss_r/handler.php
+      0 kept, 0 discarded, 12s
+[9/10] xss_s/handler.php
+      1 kept, 0 discarded, 21s
+[10/10] weak_id/handler.php
+      1 kept, 0 discarded, 9s
+== repeat 1/1: secure versions
+[1/10] brute/handler.php
+      3 kept, 0 discarded, 37s
+[2/10] csrf/handler.php
+      1 kept, 0 discarded, 18s
+[3/10] exec/handler.php
+      0 kept, 0 discarded, 27s
+[4/10] open_redirect/handler.php
+      0 kept, 0 discarded, 17s
+[5/10] sqli/handler.php
+      0 kept, 0 discarded, 40s
+[6/10] sqli_blind/handler.php
+      1 kept, 0 discarded, 27s
+[7/10] upload/handler.php
+      2 kept, 0 discarded, 28s
+[8/10] xss_r/handler.php
+      1 kept, 0 discarded, 21s
+[9/10] xss_s/handler.php
+      2 kept, 0 discarded, 29s
+[10/10] weak_id/handler.php
+      0 kept, 0 discarded, 7s
+details: runs/eval/dvwa-data_cache_ornith-9b-mlx-4bit-judge-walkthrough-20261003-072135.json
+{
+  "target": "dvwa",
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "backend": "mlx",
+  "adapter": null,
+  "mode": "judge",
+  "prompt": "walkthrough",
+  "temperature": 0.0,
+  "repeats": 1,
+  "modules": 10,
+  "detected": 2.0,
+  "secure_flagged": 2.0,
+  "pair_accuracy": 0.1,
+  "other_findings_vulnerable": 6.0,
+  "other_findings_secure": 8.0,
+  "seconds_per_scan": 177.7,
+  "detected_per_run": [
+    2
+  ]
+}
+== repeat 1/1: vulnerable versions
+[1/10] csrf/handler.php
+      0 kept, 0 discarded, 5s
+[2/10] brute/handler.php
+      0 kept, 0 discarded, 21s
+[3/10] exec/handler.php
+      1 kept, 0 discarded, 14s
+[4/10] open_redirect/handler.php
+      0 kept, 0 discarded, 14s
+[5/10] sqli/handler.php
+      0 kept, 0 discarded, 13s
+[6/10] sqli_blind/handler.php
+      0 kept, 1 discarded, 17s
+[7/10] upload/handler.php
+      1 kept, 0 discarded, 12s
+[8/10] xss_r/handler.php
+      0 kept, 0 discarded, 4s
+[9/10] xss_s/handler.php
+      0 kept, 0 discarded, 116s
+[10/10] weak_id/handler.php
+      0 kept, 0 discarded, 3s
+== repeat 1/1: secure versions
+[1/10] brute/handler.php
+      0 kept, 0 discarded, 8s
+[2/10] csrf/handler.php
+      1 kept, 0 discarded, 16s
+[3/10] exec/handler.php
+      1 kept, 0 discarded, 16s
+[4/10] open_redirect/handler.php
+      0 kept, 0 discarded, 8s
+[5/10] sqli/handler.php
+      0 kept, 0 discarded, 8s
+[6/10] sqli_blind/handler.php
+      0 kept, 0 discarded, 5s
+[7/10] upload/handler.php
+      0 kept, 0 discarded, 13s
+[8/10] xss_r/handler.php
+      0 kept, 0 discarded, 6s
+[9/10] xss_s/handler.php
+      0 kept, 0 discarded, 6s
+[10/10] weak_id/handler.php
+      0 kept, 0 discarded, 5s
+details: runs/eval/dvwa-data_cache_ornith-9b-mlx-4bit-judge-walkthrough-tuned-20261003-073254.json
+{
+  "target": "dvwa",
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "backend": "mlx",
+  "adapter": "data/finetune/adapter",
+  "mode": "judge",
+  "prompt": "walkthrough",
+  "temperature": 0.0,
+  "repeats": 1,
+  "modules": 10,
+  "detected": 1.0,
+  "secure_flagged": 1.0,
+  "pair_accuracy": 0.0,
+  "other_findings_vulnerable": 1.0,
+  "other_findings_secure": 1.0,
+  "seconds_per_scan": 218.5,
+  "detected_per_run": [
+    1
+  ]
+}
+== repeat 1/1: vulnerable versions
+[1/10] csrf/handler.php
+      0 kept, 0 discarded, 5s
+[2/10] brute/handler.php
+      0 kept, 0 discarded, 13s
+[3/10] exec/handler.php
+      1 kept, 0 discarded, 13s
+[4/10] open_redirect/handler.php
+      0 kept, 0 discarded, 11s
+[5/10] sqli/handler.php
+      0 kept, 0 discarded, 6s
+[6/10] sqli_blind/handler.php
+      1 kept, 0 discarded, 14s
+[7/10] upload/handler.php
+      1 kept, 0 discarded, 12s
+[8/10] xss_r/handler.php
+      0 kept, 1 discarded, 13s
+[9/10] xss_s/handler.php
+      0 kept, 0 discarded, 5s
+[10/10] weak_id/handler.php
+      0 kept, 0 discarded, 3s
+== repeat 1/1: secure versions
+[1/10] brute/handler.php
+      0 kept, 0 discarded, 9s
+[2/10] csrf/handler.php
+      0 kept, 0 discarded, 7s
+[3/10] exec/handler.php
+      0 kept, 0 discarded, 5s
+[4/10] open_redirect/handler.php
+      0 kept, 0 discarded, 7s
+[5/10] sqli/handler.php
+      0 kept, 0 discarded, 6s
+[6/10] sqli_blind/handler.php
+      0 kept, 0 discarded, 6s
+[7/10] upload/handler.php
+      0 kept, 0 discarded, 9s
+[8/10] xss_r/handler.php
+      0 kept, 0 discarded, 4s
+[9/10] xss_s/handler.php
+      0 kept, 0 discarded, 5s
+[10/10] weak_id/handler.php
+      0 kept, 0 discarded, 4s
+details: runs/eval/dvwa-data_cache_ornith-9b-mlx-4bit-judge-walkthrough-tuned-20261003-095130.json
+{
+  "target": "dvwa",
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "backend": "mlx",
+  "adapter": "data/finetune/adapter-600",
+  "mode": "judge",
+  "prompt": "walkthrough",
+  "temperature": 0.0,
+  "repeats": 1,
+  "modules": 10,
+  "detected": 2.0,
+  "secure_flagged": 0.0,
+  "pair_accuracy": 0.2,
+  "other_findings_vulnerable": 1.0,
+  "other_findings_secure": 0.0,
+  "seconds_per_scan": 94.3,
+  "detected_per_run": [
+    2
+  ]
+}

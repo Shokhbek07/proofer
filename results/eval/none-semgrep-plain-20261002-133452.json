@@ -1,0 +1,515 @@
+{
+  "summary": {
+    "model": "none",
+    "mode": "semgrep",
+    "prompt": "plain",
+    "think": "off",
+    "temperature": 0.0,
+    "repeats": 1,
+    "recall": 0.412,
+    "precision": 0.778,
+    "decoys_flagged": 1.0,
+    "unlisted": 1.0,
+    "patched_still_flagged": 1.0,
+    "pair_accuracy": 0.353,
+    "discarded_bad_citation": 0.0,
+    "seconds_per_scan": 0.0,
+    "recall_per_run": [
+      0.412
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "vulnerable": {
+        "recall": 0.412,
+        "precision": 0.778,
+        "found": [
+          "V03",
+          "V05",
+          "V08",
+          "V11",
+          "V12",
+          "V14",
+          "V17"
+        ],
+        "missed_count": 10,
+        "decoys_flagged": [
+          "D01"
+        ],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 17,
+        "decoys": 12,
+        "patched": 0,
+        "leads": 0,
+        "findings": 11,
+        "discarded_bad_citation": 0,
+        "seconds": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "errors": []
+      },
+      "patched": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "found": [],
+        "missed_count": 0,
+        "decoys_flagged": [
+          "D01"
+        ],
+        "patched_still_flagged": [
+          "V14"
+        ],
+        "unlisted": 1,
+        "weaknesses": 0,
+        "decoys": 12,
+        "patched": 17,
+        "leads": 0,
+        "findings": 5,
+        "discarded_bad_citation": 0,
+        "seconds": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "errors": []
+      },
+      "pair_accuracy": 0.353,
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "missing-user",
+          "cwe": "CWE-250",
+          "severity": "medium",
+          "summary": "By not specifying a USER, a program in the container may run as 'root'. This is a security hazard. If an attacker can control a process running as root, they may have control over the container. Ensure that the last USER in a Dockerfile is a USER other than 'root'.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/Dockerfile",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "CMD [\"python\", \"run.py\"]",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "md5-used-as-password",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "It looks like MD5 is used as a password hash. MD5 is not considered a secure password hash because it can be cracked by an attacker in a short amount of time. Use a suitable password hashing function such as scrypt. You can use `hashlib.scrypt`.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "    return hashlib.md5(password.encode()).hexdigest()",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "avoid-pickle",
+          "cwe": "CWE-502",
+          "severity": "medium",
+          "summary": "Avoid using `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the serialized data could be manipulated to run arbitrary code. Instead, consider serializing the relevant data as JSON or a similar text-based serialization format.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 31,
+              "end_line": 31,
+              "quote": "        return jsonify(pickle.loads(base64.b64decode(legacy)))",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "sqlalchemy-execute-raw-query",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy provides TextualSQL to easily used prepared statement with named parameters. For complex SQL composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy ORM will be a",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 27,
+              "end_line": 29,
+              "quote": "    rows = get_db().execute(\n        f\"SELECT * FROM orders WHERE user_id = ? ORDER BY {order_by}\", (g.user[\"uid\"],)\n    ).fetchall()",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-915",
+          "severity": "medium",
+          "summary": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using the Django object-relational map",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 28,
+              "end_line": 28,
+              "quote": "        f\"SELECT * FROM orders WHERE user_id = ? ORDER BY {order_by}\", (g.user[\"uid\"],)",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-704",
+          "severity": "medium",
+          "summary": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 28,
+              "end_line": 28,
+              "quote": "        f\"SELECT * FROM orders WHERE user_id = ? ORDER BY {order_by}\", (g.user[\"uid\"],)",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "subprocess-shell-true",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "Found 'subprocess' function 'run' with 'shell=True'. This is dangerous because this call will spawn the command using a shell process. Doing so propagates current shell settings and variables, which makes it much easier for a malicious actor to execute commands. Use 'shell=False' instead.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 28,
+              "end_line": 28,
+              "quote": "        f\"lp -d {printer} {ticket}\", shell=True, capture_output=True, text=True",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "avoid_app_run_with_bad_host",
+          "cwe": "CWE-668",
+          "severity": "medium",
+          "summary": "Running flask app with host 0.0.0.0 could expose the server publicly.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/run.py",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "    app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "jwt-decode-without-verify",
+          "cwe": "CWE-345",
+          "severity": "medium",
+          "summary": "Detected the decoding of a JWT token without a verify step. JWT tokens must be verified before use, otherwise the token's integrity is unknown. This means a malicious actor could forge a JWT token with any claims. Call '.verify()' before using the token.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "storefront/src/middleware/auth.js",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "    const claims = jwt.decode(header.slice(7));",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F010",
+          "title": "express-data-exfiltration",
+          "cwe": "CWE-915",
+          "severity": "medium",
+          "summary": "Depending on the context, user control data in `Object.assign` can cause web response to include data that it should not have or can lead to a mass assignment vulnerability.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/profile.js",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "  Object.assign(req.user, req.body);",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F011",
+          "title": "express-check-csurf-middleware-usage",
+          "cwe": "CWE-352",
+          "severity": "medium",
+          "summary": "A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your routes with a token or cookies.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "storefront/src/server.js",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "const app = express();",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ],
+      "findings_patched": [
+        {
+          "id": "F001",
+          "title": "sqlalchemy-execute-raw-query",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy provides TextualSQL to easily used prepared statement with named parameters. For complex SQL composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy ORM will be a",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 27,
+              "end_line": 29,
+              "quote": "    rows = get_db().execute(\n        f\"SELECT * FROM orders WHERE user_id = ? ORDER BY {order_by}\", (g.user[\"uid\"],)\n    ).fetchall()",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-915",
+          "severity": "medium",
+          "summary": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using the Django object-relational map",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 28,
+              "end_line": 28,
+              "quote": "        f\"SELECT * FROM orders WHERE user_id = ? ORDER BY {order_by}\", (g.user[\"uid\"],)",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-704",
+          "severity": "medium",
+          "summary": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 28,
+              "end_line": 28,
+              "quote": "        f\"SELECT * FROM orders WHERE user_id = ? ORDER BY {order_by}\", (g.user[\"uid\"],)",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "avoid_app_run_with_bad_host",
+          "cwe": "CWE-668",
+          "severity": "medium",
+          "summary": "Running flask app with host 0.0.0.0 could expose the server publicly.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "orders-api/run.py",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "    app.run(host=\"0.0.0.0\", port=8000, debug=False)",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "express-check-csurf-middleware-usage",
+          "cwe": "CWE-352",
+          "severity": "medium",
+          "summary": "A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your routes with a token or cookies.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "storefront/src/server.js",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "const app = express();",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,903 @@
+{
+  "summary": {
+    "target": "dvwa",
+    "model": "data/cache/ornith-9b-mlx-4bit",
+    "backend": "mlx",
+    "adapter": null,
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "temperature": 0.0,
+    "repeats": 1,
+    "modules": 10,
+    "detected": 2.0,
+    "secure_flagged": 2.0,
+    "pair_accuracy": 0.1,
+    "other_findings_vulnerable": 6.0,
+    "other_findings_secure": 8.0,
+    "seconds_per_scan": 177.7,
+    "detected_per_run": [
+      2
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "detected": [
+        "brute",
+        "sqli"
+      ],
+      "missed": [
+        "csrf",
+        "exec",
+        "open_redirect",
+        "sqli_blind",
+        "upload",
+        "weak_id",
+        "xss_r",
+        "xss_s"
+      ],
+      "secure_flagged": [
+        "brute",
+        "sqli_blind"
+      ],
+      "pair_correct": [
+        "sqli"
+      ],
+      "other_findings_vulnerable": 6,
+      "other_findings_secure": 8,
+      "stats_vulnerable": {
+        "leads": 10,
+        "findings": 8,
+        "discarded_bad_citation": 0,
+        "seconds": 177.7,
+        "prompt_tokens": 8477,
+        "completion_tokens": 7607,
+        "errors": [
+          "csrf/handler.php: model did not return valid JSON",
+          "exec/handler.php: model did not return valid JSON",
+          "sqli_blind/handler.php: model did not return valid JSON",
+          "xss_r/handler.php: model did not return valid JSON",
+          "semgrep failed: Fatal error: exception Invalid_argument: \"\": invalid path\nRaised at Stdlib.invalid_arg in file \"stdlib.ml\", line 30, characters 20-45\nCalled from Ca_certs.detect_one in file \"lib/ca_certs.ml\", line 13, characters 14-26\nCalled from Ca_certs.trust_anchors in file \"lib/ca_certs.ml\", line 153, character"
+        ]
+      },
+      "stats_secure": {
+        "leads": 10,
+        "findings": 10,
+        "discarded_bad_citation": 0,
+        "seconds": 251.4,
+        "prompt_tokens": 11616,
+        "completion_tokens": 10843,
+        "errors": [
+          "exec/handler.php: model did not return valid JSON",
+          "open_redirect/handler.php: model did not return valid JSON",
+          "sqli/handler.php: model did not return valid JSON",
+          "semgrep failed: Fatal error: exception Invalid_argument: \"\": invalid path\nRaised at Stdlib.invalid_arg in file \"stdlib.ml\", line 30, characters 20-45\nCalled from Ca_certs.detect_one in file \"lib/ca_certs.ml\", line 13, characters 14-26\nCalled from Ca_certs.trust_anchors in file \"lib/ca_certs.ml\", line 153, character"
+        ]
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "SQL injection via unsanitized username in query construction",
+          "cwe": "CWE-89",
+          "severity": "critical",
+          "summary": "The username from GET is concatenated directly into a SQL query, allowing an attacker to inject arbitrary SQL and bypass/extract data.",
+          "reasoning": "The value of $_GET['username'] (line 5) is attacker-controlled and is interpolated into the SQL string on line 12 without any quoting, escaping, allowlist, or use of parameterized queries. The string is then executed with mysqli_query (line 13), a classic SQL injection sink. No protection is present.",
+          "remediation": "Use prepared statements with mysqli (e.g., mysqli_real_escape_string or, preferably, mysqli_stmt with mysqli_prepare/mysqli_bind_param) so the username is bound as a parameter rather than embedded in the query text.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$user = $_GET[ 'username' ];",
+              "role": "source"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "$query  = \"SELECT * FROM `users` WHERE user = '$user' AND password = '$pass';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "brute/handler.php: quote not found in brute/handler.php; 1 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Weak password hashing with MD5",
+          "cwe": "CWE-327",
+          "severity": "high",
+          "summary": "Passwords are hashed with MD5, which is fast and unsalted and unsuitable for password storage, enabling offline cracking and rainbow-table lookups.",
+          "reasoning": "Line 9 applies md5() to the password and the resulting hash is compared in the SQL query. MD5 is a fast cryptographic hash not designed for password storage; it lacks a salt and a computational cost factor, so it is trivially defeated with precomputed rainbow tables and is fast to brute-force. No protection (salting, slow KDF) is present.",
+          "remediation": "Store passwords using a slow, salted password hashing function such as password_hash() with PASSWORD_DEFAULT (bcrypt/argon2), and compare with password_verify(). Do not use MD5 for password storage.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 8,
+              "end_line": 9,
+              "quote": "$pass = $_GET[ 'password' ];\n$pass = md5( $pass );",
+              "role": "config"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Reflected XSS from unsanitized username in HTML output",
+          "cwe": "CWE-79",
+          "severity": "medium",
+          "summary": "The attacker-controlled username is interpolated directly into an HTML page without encoding, allowing reflected cross-site scripting.",
+          "reasoning": "Line 21 concatenates the raw $user value into an HTML string ('Welcome to the password protected area {$user}'). Since $user comes from attacker-controlled GET input and is placed into HTML without any escaping/encoding, a value such as '<script>alert(1)</script>' would be reflected and executed. No output encoding protection is present.",
+          "remediation": "Escape the username before embedding it in HTML using htmlspecialchars($user, ENT_QUOTES, 'UTF-8') (and validate/allowlist input), so it is rendered as text rather than parsed as HTML.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$user = $_GET[ 'username' ];",
+              "role": "source"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 21,
+              "end_line": 21,
+              "quote": "$html .= \"<p>Welcome to the password protected area {$user}</p>\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Open redirect via unvalidated user-supplied URL",
+          "cwe": "CWE-693",
+          "severity": "high",
+          "summary": "The 'redirect' GET parameter is used directly as the HTTP Location value without validating that it points to the site's own host, allowing attackers to redirect users off-site (e.g. to https://evil.com/).",
+          "reasoning": "The input comes from $_GET (untrusted attacker-controlled), and it is placed into header('location: ...') with no scheme/host allowlist or encoding. A value such as 'https://evil.com/' or '//evil.com/' would cause the browser to follow it to the attacker's domain. The only check present is existence and non-emptiness, which does not constrain the host, so the sink is unguarded.",
+          "remediation": "Validate the redirect target against an allowlist of permitted hosts/schemes, or enforce that the Location value is a same-origin relative URL (e.g. same host as the current request and a permitted scheme like 'https://'), rejecting anything else. Alternatively, use a server-side redirect with a fixed host and only append the user-supplied path.",
+          "evidence": [
+            {
+              "path": "open_redirect/handler.php",
+              "start_line": 3,
+              "end_line": 4,
+              "quote": "if (array_key_exists (\"redirect\", $_GET) && $_GET['redirect'] != \"\") {\n\theader (\"location: \" . $_GET['redirect']);",
+              "role": "source"
+            },
+            {
+              "path": "open_redirect/handler.php",
+              "start_line": 4,
+              "end_line": 4,
+              "quote": "\theader (\"location: \" . $_GET['redirect']);",
+              "role": "sink"
+            },
+            {
+              "path": "open_redirect/handler.php",
+              "start_line": 3,
+              "end_line": 3,
+              "quote": "if (array_key_exists (\"redirect\", $_GET) && $_GET['redirect'] != \"\") {",
+              "role": "missing_check"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "open_redirect/handler.php: lines corrected from 3-4"
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "SQL injection via interpolated user input",
+          "cwe": "CWE-89",
+          "severity": "critical",
+          "summary": "The user-supplied 'id' value is interpolated directly into SQL query strings that are executed without parameterisation, allowing an attacker to inject arbitrary SQL.",
+          "reasoning": "The value $id originates from the untrusted $_REQUEST input (line 5) and is concatenated into a query string (lines 10 and 31) that is then passed to a database execution function (mysqli_query at line 11 and SQLite3 query() at line 34). Neither execution function is used in parameterised mode, so there is no allowlist, type-check, range-check, or encoding that would make the interpolated value safe. An attacker can therefore control the SQL. The 'Submit' check at line 3 is not an authentication or ownership control, so it does not mitigate this.",
+          "remediation": "Use parameterised queries: for MySQL use mysqli_real_escape_string() or, preferably, prepared statements via mysqli_stmt_init()/mysqli_stmt_bind_param(); for SQLite3 use the parameterised API (e.g., prepare() with bound parameters) instead of query(). Additionally validate that $id is a positive integer (filter_var($id, FILTER_VALIDATE_INT)) and apply a range/allowlist check before use.",
+          "evidence": [
+            {
+              "path": "sqli/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$id = $_REQUEST[ 'id' ];",
+              "role": "source"
+            },
+            {
+              "path": "sqli/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\";",
+              "role": "propagation"
+            },
+            {
+              "path": "sqli/handler.php",
+              "start_line": 11,
+              "end_line": 11,
+              "quote": "$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $query ) or die( '<pre>' . ((is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_error($GLOBALS[\"___mysqli_ston\"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );",
+              "role": "sink"
+            },
+            {
+              "path": "sqli/handler.php",
+              "start_line": 34,
+              "end_line": 34,
+              "quote": "$results = $sqlite_db_connection->query($query);",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "sqli/handler.php: lines corrected from 31-31; 1 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Unrestricted file upload (no file-type validation)",
+          "cwe": "CWE-22",
+          "severity": "medium",
+          "summary": "The handler accepts any filename from an untrusted POST and writes it to disk with no extension or type check, allowing arbitrary file uploads.",
+          "reasoning": "Line 6 takes the attacker-controlled $_FILES['uploaded']['name'] and passes it through basename() with no validation. basename() prevents path traversal but does not restrict the file type, so an attacker can upload arbitrary files (e.g., a PHP web shell). Nothing in this file or the shown code checks or allowslists the filename, so the missing protection is the absence of any file-type/extension validation.",
+          "remediation": "Validate the filename against an allowlist of permitted extensions/types (e.g., only allow image extensions) before constructing the target path, and reject or sanitize anything else.",
+          "evidence": [
+            {
+              "path": "upload/handler.php",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "$target_path .= basename( $_FILES[ 'uploaded' ][ 'name' ] );",
+              "role": "sink"
+            },
+            {
+              "path": "upload/handler.php",
+              "start_line": 3,
+              "end_line": 3,
+              "quote": "if( isset( $_POST[ 'Upload' ] ) ) {",
+              "role": "context"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "SQL injection via interpolated unsanitised query",
+          "cwe": "CWE-89",
+          "severity": "critical",
+          "summary": "User-controlled inputs are placed directly into a SQL string that is executed with mysqli_query, so a user can inject arbitrary SQL. The preceding mysqli_real_escape_string does not protect this because it escapes against a specific connection character set that is not verified, and the escaping is not coordinated with how the query is executed.",
+          "reasoning": "The message and name come from $_POST (untrusted). They are passed to mysqli_real_escape_string($GLOBALS['___mysqli_ston'], ...) which, in this auto-converted code, either errors out or escapes against a connection whose validity is not confirmed. The escaped values are then concatenated into the query string on line 16 and run with mysqli_query. If the connection is invalid the code falls through to '' (no error thrown), so no escaping actually happens, and the raw POST values are embedded in the SQL, allowing injection. Even when escaping runs, escaping against a possibly-mismatched connection is not reliable for injection safety. There is no use of a parameterised statement, so the sink is directly controllable.",
+          "remediation": "Remove the manual escaping and construct the query with named, parameterised placeholders, then execute with mysqli_stmt. Example: use $query = 'INSERT INTO guestbook (comment, name) VALUES (?, ?)'; bind the message and name as mysqli_stmt::BIND_PARAM_STR; execute with mysqli_stmt_exec. This makes the values data, not SQL, regardless of connection character set. Also verify the connection exists and establish least-privilege before relying on it.",
+          "evidence": [
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 5,
+              "end_line": 6,
+              "quote": "$message = trim( $_POST[ 'mtxMessage' ] );\n$name    = trim( $_POST[ 'txtName' ] );",
+              "role": "source"
+            },
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "$message = ((isset($GLOBALS[\"___mysqli_ston\"]) && is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_real_escape_string($GLOBALS[\"___mysqli_ston\"],  $message ) : ((trigger_error(\"[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.\", E_USER_ERROR)) ? \"\" : \"\"));",
+              "role": "propagation"
+            },
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 16,
+              "end_line": 17,
+              "quote": "$query  = \"INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );\";\n$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $query ) or die( '<pre>' . ((is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_error($GLOBALS[\"___mysqli_ston\"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "xss_s/handler.php: lines corrected from 10-13"
+            },
+            {
+              "name": "wording",
+              "passed": false,
+              "detail": "hedged: 'possibly'"
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "Session cookie missing HttpOnly attribute",
+          "cwe": "CWE-1004",
+          "severity": "medium",
+          "summary": "The session cookie 'dvwaSession' is set without the HttpOnly flag, allowing JavaScript to read it and enabling session hijacking.",
+          "reasoning": "setcookie() is called without the 'HttpOnly' option, so the cookie is readable by client-side JavaScript. An attacker can read the session cookie and use it to impersonate the user (session fixation / hijacking). The value written is a numeric counter, so there is no injection or encoding issue; the weakness is purely the missing access-control attribute.",
+          "remediation": "Set the 'HttpOnly' option in setcookie() so the cookie is not accessible to JavaScript, e.g. setcookie('dvwaSession', $cookie_value, 0, '/', '', false, true); (the last argument sets Secure).",
+          "evidence": [
+            {
+              "path": "weak_id/handler.php",
+              "start_line": 11,
+              "end_line": 11,
+              "quote": "setcookie(\"dvwaSession\", $cookie_value);",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        }
+      ],
+      "findings_secure": [
+        {
+          "id": "F001",
+          "title": "Cross-site scripting via unencoded interpolation of user-supplied username into HTML",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The username from untrusted POST is placed directly into HTML output without encoding, allowing reflected XSS.",
+          "reasoning": "$user originates from $_POST['username'] (untrusted). It is interpolated into an <em>...</em> HTML element on line 67 with no encoding. The earlier mysqli_real_escape_string only escapes SQL metacharacters, not HTML metacharacters, so it does not protect the HTML output. This is a missing encoding control at the HTML sink.",
+          "remediation": "Encode the value before output, e.g. use htmlspecialchars($user, ENT_QUOTES, 'UTF-8') or an output-escaping helper, so HTML/script metacharacters are neutralised.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "$user = $_POST[ 'username' ];",
+              "role": "source"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 67,
+              "end_line": 67,
+              "quote": "$html .= \"<p>Welcome to the password protected area <em>{$user}</em></p>\";",
+              "role": "sink"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "$user = ((isset($GLOBALS[\"___mysqli_ston\"]) && is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_real_escape_string($GLOBALS[\"___mysqli_ston\"],  $user ) : ((trigger_error(\"[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.\", E_USER_ERROR)) ? \"\" : \"\"));",
+              "role": "context"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "SQL injection via weak/ineffective escaping of username in UPDATE statement",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "The username is interpolated into a string-built SQL UPDATE statement; the escaping applied is unreliable and may not cover all SQL metacharacters.",
+          "reasoning": "Line 88 builds a SQL string with user-controlled $user interpolated directly. Although the converted code calls mysqli_real_escape_string, this is applied to a statement that is actually executed via PDO prepared statements elsewhere; the string interpolation on line 88 is not parameterised and the escaping function is a linter-inserted placeholder that may not handle every SQL metacharacter (e.g. backslash, quote, NULL byte). This is a missing parameterisation control at the SQL sink.",
+          "remediation": "Use a bound PDO parameter instead of string interpolation, e.g. add $data->bindParam(':user', $user, PDO::PARAM_STR) for the failed_login increment and remove the manual escaping, so the value is passed as a bound parameter.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 88,
+              "end_line": 88,
+              "quote": "$data = $db->prepare( 'UPDATE users SET failed_login = (failed_login + 1) WHERE user = (:user) LIMIT 1;' );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "brute/handler.php: quote not found in brute/handler.php; 1 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "wording",
+              "passed": false,
+              "detail": "hedged: 'may'"
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Weak password hashing with MD5",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "Passwords are stored using md5(), a fast unsalted hash unsuitable for password storage.",
+          "reasoning": "Line 16 hashes the submitted password with md5(). MD5 is cryptographically broken and fast, offering no salt or work factor, so stored credentials are vulnerable to offline brute-force and rainbow-table attacks. This is a weak cryptography configuration.",
+          "remediation": "Use a purpose-built password hashing function such as password_hash() with PASSWORD_DEFAULT (bcrypt/argon) and verify with password_verify().",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "$pass = md5( $pass );",
+              "role": "config"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Insecure password hashing (unsalted MD5)",
+          "cwe": "CWE-327",
+          "severity": "high",
+          "summary": "Passwords are hashed with MD5() (lines 15 and 29) and compared against a stored MD5 hash, giving no salt and no work factor, so hashes can be cracked or compared quickly offline.",
+          "reasoning": "The current password is escaped and then passed to md5() at line 15, and the new password is md5()ed at line 29; the comparison at line 25 compares these MD5 values against the stored password column. MD5 is a fast general-purpose hash, not a password hash, and there is no salt and no cost parameter, so it is vulnerable to fast brute-force/rainbow-table attacks. The comparison of unsalted hashes also leaks timing information. The code stores the weak MD5 hash directly into the database at line 33.",
+          "remediation": "Hash passwords with a slow, salted algorithm such as password_hash() using PASSWORD_DEFAULT (bcrypt/argon), and compare with password_verify(). Do not store MD5. Example: $pass_new = password_hash($pass_new, PASSWORD_DEFAULT); then $data->execute() and use password_verify() for the current-password check.",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "$pass_curr = md5( $pass_curr );",
+              "role": "config"
+            },
+            {
+              "path": "csrf/handler.php",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "$pass_new = md5( $pass_new );",
+              "role": "propagation"
+            },
+            {
+              "path": "csrf/handler.php",
+              "start_line": 33,
+              "end_line": 33,
+              "quote": "$data->bindParam( ':password', $pass_new, PDO::PARAM_STR );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "Blind SQL injection via unvalidated, non-integer id input (SQLITE backend)",
+          "cwe": "CWE-89",
+          "severity": "high",
+          "summary": "The id value from untrusted GET input is used in a database query. Although the MYSQL backend is safe due to parameterization, the SQLITE backend path contains a logic flaw that lets a crafted id bypass the integer-only validation and reach the query in a form that can be manipulated by boolean-based blind SQL injection, depending on the actual type of values bound by the SQLite3 driver.",
+          "reasoning": "The id is read from $_GET['id'] (untrusted, line 9). It is validated with is_numeric() (line 12) and cast with intval() (line 13), which normally prevents SQL injection. However, is_numeric() also returns true for numeric strings such as '123.456', so a value like '123.456' passes the numeric check and intval() converts it to 123. Then the SQLITE path binds $id with SQLITE3_INTEGER (line 27). If the SQLite3 driver does not coerce a PHP float into an integer (leaving it as a floating-point literal in the bound value), the parameter is no longer a pure integer literal in the query, which opens a blind SQL injection path: a payload like '123' OR (123.456 != 123.0) -- 1 would evaluate to a row match that leaks data through the column-count/exists logic. The numeric validation is therefore ineffective against this class of injection, and the parameterization does not help because the value is bound as an integer type. This is a missing validation (integer-range/type enforcement) control that the analysis supports.",
+          "remediation": "Enforce a strict integer type before binding. Replace the is_numeric() check with a check that rejects any non-integer input, e.g. 'if (!preg_match('/^\\d+$/',$id)) { header(': 400 Bad Request'); exit; }' before intval(), or validate against an explicit allowed-id range. This ensures the value bound with SQLITE3_INTEGER is always a whole integer, closing the blind SQL injection vector. Keep the parameterized query and do not rely on is_numeric() for injection prevention.",
+          "evidence": [
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 9,
+              "end_line": 9,
+              "quote": "$id = $_GET[ 'id' ];",
+              "role": "source"
+            },
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "if(is_numeric( $id )) {",
+              "role": "missing_check"
+            },
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 13,
+              "end_line": 13,
+              "quote": "$id = intval ($id);",
+              "role": "source"
+            },
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 26,
+              "end_line": 27,
+              "quote": "$stmt = $sqlite_db_connection->prepare('SELECT COUNT(first_name) AS numrows FROM users WHERE user_id = :id LIMIT 1;' );\n\t\t\t\t$stmt->bindValue(':id',$id,SQLITE3_INTEGER);",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Missing authentication on upload handler",
+          "cwe": "CWE-346",
+          "severity": "medium",
+          "summary": "The handler processes an uploaded file without verifying the requesting user is authenticated; it relies solely on a CSRF token check that does not itself confirm authentication.",
+          "reasoning": "The handler at lines 3-60 returns/changes a record (the uploaded file) without any authentication check. The only protection is checkToken() at line 5, which validates a CSRF token against a session token but does not verify the user is logged in. A token can be forged or a session hijacked, so an unauthenticated actor can reach the handler. This is a missing ownership/authentication check.",
+          "remediation": "Verify the user is authenticated (e.g., check a logged-in session / session user) before processing the upload, and ensure the CSRF token check is preceded by an authentication gate.",
+          "evidence": [
+            {
+              "path": "upload/handler.php",
+              "start_line": 3,
+              "end_line": 3,
+              "quote": "if( isset( $_POST[ 'Upload' ] ) ) {",
+              "role": "source"
+            },
+            {
+              "path": "upload/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );",
+              "role": "missing_check"
+            },
+            {
+              "path": "upload/handler.php",
+              "start_line": 35,
+              "end_line": 35,
+              "quote": "}",
+              "role": "context"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "upload/handler.php: lines corrected from 60-60"
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "CSRF token check does not verify authentication",
+          "cwe": "CWE-347",
+          "severity": "medium",
+          "summary": "The CSRF protection validates a token against a session token but does not confirm the user is authenticated, so an unauthenticated attacker can forge a token and reach the handler.",
+          "reasoning": "checkToken() compares a submitted token to a session token. If the session token is set without an authenticated user (or session fixation/hijacking occurs), the token check passes for an unauthenticated actor. The handler then processes the upload. The code provides no authentication gate before the token check, so the CSRF control alone is insufficient to prevent unauthenticated access.",
+          "remediation": "Add an authentication check before calling checkToken() (e.g., require a logged-in session user), and generate the session token only for authenticated users.",
+          "evidence": [
+            {
+              "path": "upload/handler.php",
+              "start_line": 3,
+              "end_line": 5,
+              "quote": "if( isset( $_POST[ 'Upload' ] ) ) {\n\t// Check Anti-CSRF token\n\tcheckToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );",
+              "role": "missing_check"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "CSRF token check runs before token generation, so protection is ineffective",
+          "cwe": "CWE-693",
+          "severity": "high",
+          "summary": "The anti-CSRF token is validated before it is ever generated in the session, so the check cannot validate a legitimate token and provides no real protection.",
+          "reasoning": "generateSessionToken() is called on line 16, after the token check on line 6. On the first request the session token does not yet exist, so the check compares the request token against an empty/undefined session token and will always fail for legitimate users (or, depending on checkToken's implementation, always pass). The token must be generated before it is checked.",
+          "remediation": "Call generateSessionToken() before checkToken(). Restructure the handler so the token is generated at the start of the request and checked before any protected action, e.g. generate the token first, then checkToken() on subsequent requests.",
+          "evidence": [
+            {
+              "path": "xss_r/handler.php",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );",
+              "role": "source"
+            },
+            {
+              "path": "xss_r/handler.php",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "generateSessionToken();",
+              "role": "config"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "CSRF token check uses $_REQUEST instead of $_POST, weakening CSRF protection",
+          "cwe": "CWE-352",
+          "severity": "medium",
+          "summary": "The anti-CSRF token is validated by reading the token from $_REQUEST, which includes GET query-string parameters. An attacker can therefore supply the valid session token through the URL query string, bypassing the POST-only CSRF check.",
+          "reasoning": "CSRF tokens are designed to be submitted in the POST body. Because $_REQUEST merges POST and GET data, a forged request can include the token as a query parameter (e.g. ?user_token=<valid-token>), and the check would pass even though the request was not a genuine POST. The check is only effective if the token is read exclusively from $_POST.",
+          "remediation": "Read the token strictly from the POST body: checkToken( $_POST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' ); and ensure the token is generated per session and compared with a strict POST-only check.",
+          "evidence": [
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );",
+              "role": "source"
+            },
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 3,
+              "end_line": 5,
+              "quote": "if( isset( $_POST[ 'btnSign' ] ) ) {\n\t// Check Anti-CSRF token\n\tcheckToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );",
+              "role": "context"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F010",
+          "title": "htmlspecialchars output written to a parameterized PDO string input is ineffective and misleading",
+          "cwe": "CWE-505",
+          "severity": "low",
+          "summary": "The message and name values are HTML-encoded with htmlspecialchars() before being bound to a PDO parameterized query, so the encoding has no effect on the stored data and does not prevent SQL injection; the real protection is the prepared statement, making the htmlspecialchars calls redundant and potentially masking the injection-mitigation mechanism.",
+          "reasoning": "htmlspecialchars() encodes characters for HTML output, but the values are inserted into the database through a parameterized PDO statement (bindParam with PDO::PARAM_STR), which already prevents SQL injection by escaping values as data. Because the data is never placed directly into a SQL string, the htmlspecialchars() calls do not protect anything and create a false impression of defense. The preceding mysqli_real_escape_string calls are also neutralized by the parameterization. No actual SQL-injection protection gap exists here, but the redundant encoding is misleading and could cause data corruption (e.g., encoded characters stored in the DB).",
+          "remediation": "Remove the redundant htmlspecialchars() (and the ineffective mysqli_real_escape_string) calls; rely solely on the parameterized PDO statement for safe storage, and apply htmlspecialchars() only when outputting the values to an HTML context.",
+          "evidence": [
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 12,
+              "end_line": 14,
+              "quote": "$message = stripslashes( $message );\n\t$message = ((isset($GLOBALS[\"___mysqli_ston\"]) && is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_real_escape_string($GLOBALS[\"___mysqli_ston\"],  $message ) : ((trigger_error(\"[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.\", E_USER_ERROR)) ? \"\" : \"\"));\n\t$message = htmlspecialchars( $message );",
+              "role": "propagation"
+            },
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 22,
+              "end_line": 25,
+              "quote": "$data = $db->prepare( 'INSERT INTO guestbook ( comment, name ) VALUES ( :message, :name );' );\n\t$data->bindParam( ':message', $message, PDO::PARAM_STR );\n\t$data->bindParam( ':name', $name, PDO::PARAM_STR );\n\t$data->execute();",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "xss_s/handler.php: lines corrected from 13-14"
+            },
+            {
+              "name": "wording",
+              "passed": false,
+              "detail": "hedged: 'potentially'"
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

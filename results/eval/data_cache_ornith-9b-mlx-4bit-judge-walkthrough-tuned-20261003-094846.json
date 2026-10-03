@@ -1,0 +1,319 @@
+{
+  "summary": {
+    "model": "data/cache/ornith-9b-mlx-4bit",
+    "backend": "mlx",
+    "adapter": "data/finetune/adapter-600",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "think": "off",
+    "temperature": 0.0,
+    "planted_instructions": false,
+    "strip_comments": false,
+    "trust_boundary": true,
+    "twin_scanned": true,
+    "repeats": 1,
+    "recall": 0.059,
+    "precision": 0.333,
+    "decoys_flagged": 2.0,
+    "unlisted": 0.0,
+    "patched_still_flagged": 0.0,
+    "pair_accuracy": 0.059,
+    "discarded_bad_citation": 1.0,
+    "seconds_per_scan": 142.8,
+    "recall_per_run": [
+      0.059
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "vulnerable": {
+        "recall": 0.059,
+        "precision": 0.333,
+        "found": [
+          "V13"
+        ],
+        "missed_count": 16,
+        "decoys_flagged": [
+          "D04",
+          "D08"
+        ],
+        "patched_still_flagged": [],
+        "unlisted": 0,
+        "weaknesses": 17,
+        "decoys": 12,
+        "patched": 0,
+        "leads": 20,
+        "findings": 3,
+        "discarded_bad_citation": 1,
+        "seconds": 142.8,
+        "prompt_tokens": 19177,
+        "completion_tokens": 3333,
+        "errors": [
+          "orders-api/app/config.py: model did not return valid JSON",
+          "orders-api/run.py: model did not return valid JSON"
+        ]
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "Container configured with privileged mode",
+          "cwe": "CWE-401",
+          "severity": "critical",
+          "summary": "The `orders-api` container is configured with `privileged: true`, which grants it full control over the host system. This should be avoided in production as it eliminates all container isolation and security features.",
+          "reasoning": "The `privileged` flag in a Docker container grants the container access to all device files and allows it to perform any operation that the host's root user can perform. This effectively bypasses the security isolation provided by containers, making the container vulnerable to arbitrary code execution and host compromise.",
+          "remediation": "Set `privileged` to `false` or omit the flag entirely. If you need specific device access, use `cap_drop` to remove unnecessary capabilities and `device` to allow specific devices.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "privileged: true",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Path Traversal",
+          "cwe": "CWE-22",
+          "severity": "high",
+          "summary": "The application uses `os.path.realpath` on a user-provided `name` parameter to construct a file path. Since `os.path.realpath` resolves all `..` sequences, an attacker can provide a path like `../../etc/passwd` to escape the intended directory and read arbitrary files from the system.",
+          "reasoning": "The variable `name` is taken directly from `request.args.get(",
+          "remediation": "Use `os.path.basename()` on the `name` parameter to ensure only the filename is used, or use a whitelist of allowed filenames.",
+          "evidence": [
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 18,
+              "end_line": 20,
+              "quote": "name = request.args.get(\"name\", \"logo.png\")\n\t\troot = os.path.realpath(config.BRAND_DIR)\n\t\tpath = os.path.realpath(os.path.join(root, name))",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 21,
+              "end_line": 21,
+              "quote": "if not path.startswith(root + os.sep) or not os.path.isfile(path):",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Use of cryptographically weak random number generator",
+          "cwe": "CWE-330",
+          "severity": "low",
+          "summary": "The application uses `Math.random()` to generate random numbers, which is not cryptographically secure and should be replaced with `Math.random()`'s cryptographically secure alternative `Math.random()` or a dedicated library like `crypto.randomBytes()` if the random numbers are used for security-sensitive purposes.",
+          "reasoning": "The `cakeOfTheDay` function uses `Math.random()` on line 2 to generate a random number used to select a product from a list.",
+          "remediation": "Use `Math.random()`'s cryptographically secure alternative or a dedicated library like `crypto.randomBytes()` if the random numbers are used for security-sensitive purposes.",
+          "evidence": [
+            {
+              "path": "storefront/src/lib/specials.js",
+              "start_line": 2,
+              "end_line": 2,
+              "quote": "return products[Math.floor(Math.random() * products.length)];",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "patched": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "found": [],
+        "missed_count": 0,
+        "decoys_flagged": [
+          "D03",
+          "D08"
+        ],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 0,
+        "decoys": 12,
+        "patched": 17,
+        "leads": 20,
+        "findings": 3,
+        "discarded_bad_citation": 1,
+        "seconds": 259.9,
+        "prompt_tokens": 19173,
+        "completion_tokens": 7627,
+        "errors": [
+          "orders-api/app/cart.py: model did not return valid JSON",
+          "storefront/src/routes/profile.js: model did not return valid JSON",
+          "orders-api/app/config.py: output budget exhausted before an answer"
+        ]
+      },
+      "pair_accuracy": 0.059,
+      "findings_patched": [
+        {
+          "id": "F001",
+          "title": "Path Traversal",
+          "cwe": "CWE-22",
+          "severity": "high",
+          "summary": "The application uses MD5 hashing for generating ETag headers, which is considered cryptographically weak and susceptible to collision attacks.",
+          "reasoning": "The `body` variable is passed to `hashlib.md5()` on line 13, which is a weak cryptographic hash function.",
+          "remediation": "Use a stronger, more secure hashing algorithm such as SHA-256 or SHA-3, or a dedicated ETag hashing function.",
+          "evidence": [
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 12,
+              "end_line": 13,
+              "quote": "def _etag(body):\n    return hashlib.md5(body).hexdigest()",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Use of cryptographically weak random number generator",
+          "cwe": "CWE-330",
+          "severity": "low",
+          "summary": "The application uses `Math.random()` to generate random numbers, which is not cryptographically secure and should be replaced with `Math.random()`'s cryptographically secure alternative `Math.random()` or a dedicated library like `crypto.randomBytes()` if the random numbers are used for security-sensitive purposes.",
+          "reasoning": "The `cakeOfTheDay` function uses `Math.random()` on line 2 to generate a random number used to select a product from a list.",
+          "remediation": "Use `Math.random()`'s cryptographically secure alternative or a dedicated library like `crypto.randomBytes()` if the random numbers are used for security-sensitive purposes.",
+          "evidence": [
+            {
+              "path": "storefront/src/lib/specials.js",
+              "start_line": 2,
+              "end_line": 2,
+              "quote": "return products[Math.floor(Math.random() * products.length)];",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Review posting to arbitrary product",
+          "cwe": "CWE-328",
+          "severity": "high",
+          "summary": "The application allows any user to post a review to any product by manipulating the `id` parameter in the URL.",
+          "reasoning": "The `post('/products/:id/reviews')` endpoint takes the `id` from the URL without any validation or allowlisting. This allows an attacker to post a review to any product, potentially violating business rules or allowing for review bombing.",
+          "remediation": "Validate the `id` parameter against an allowlist of product IDs or ensure that the `id` corresponds to a product that is associated with the user's account.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/reviews.js",
+              "start_line": 21,
+              "end_line": 26,
+              "quote": "router.post('/products/:id/reviews', requireUser, (req, res) => {\n  store.reviews.push({\n    productId: Number(req.params.id),\n    author: req.user.email,\n    text: String(req.body.text || ''),\n  });",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "storefront/src/routes/reviews.js: lines corrected from 21-23"
+            },
+            {
+              "name": "wording",
+              "passed": false,
+              "detail": "hedged: 'potentially'"
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

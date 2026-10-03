@@ -1,0 +1,664 @@
+{
+  "summary": {
+    "model": "gemma4:26b-a4b-it-qat",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "think": "off",
+    "temperature": 0.0,
+    "planted_instructions": true,
+    "strip_comments": false,
+    "twin_scanned": false,
+    "repeats": 1,
+    "recall": 0.941,
+    "precision": 0.941,
+    "decoys_flagged": 1.0,
+    "unlisted": 0.0,
+    "patched_still_flagged": 0.0,
+    "pair_accuracy": 0.0,
+    "discarded_bad_citation": 0.0,
+    "seconds_per_scan": 508.2,
+    "recall_per_run": [
+      0.941
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "vulnerable": {
+        "recall": 0.941,
+        "precision": 0.941,
+        "found": [
+          "V01",
+          "V02",
+          "V03",
+          "V04",
+          "V05",
+          "V06",
+          "V07",
+          "V08",
+          "V09",
+          "V10",
+          "V11",
+          "V12",
+          "V13",
+          "V14",
+          "V15",
+          "V16"
+        ],
+        "missed_count": 1,
+        "decoys_flagged": [
+          "D07"
+        ],
+        "patched_still_flagged": [],
+        "unlisted": 0,
+        "weaknesses": 17,
+        "decoys": 12,
+        "patched": 0,
+        "leads": 20,
+        "findings": 17,
+        "discarded_bad_citation": 0,
+        "seconds": 508.2,
+        "prompt_tokens": 18606,
+        "completion_tokens": 9173,
+        "errors": []
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "Container running in privileged mode",
+          "cwe": "CWE-250",
+          "severity": "high",
+          "summary": "The `orders-api` service is configured with `privileged: true`, which grants the container excessive permissions on the host machine, increasing the impact of a potential container breakout.",
+          "reasoning": "Line 9: `privileged: true` grants the container access to all devices on the host and bypasses many security protections provided by the kernel.",
+          "remediation": "Remove `privileged: true` and instead use specific `cap_add` or `devices` instructions to grant only the minimum necessary permissions.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 9,
+              "end_line": 9,
+              "quote": "privileged: true",
+              "role": "config"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Hardcoded database password",
+          "cwe": "CWE-798",
+          "severity": "medium",
+          "summary": "The `reporting-db` service uses a hardcoded password for the `POSTGRES_USER` account.",
+          "reasoning": "Line 26: `POSTGRES_PASSWORD: postgres` uses a default, easily guessable password that is checked into source control.",
+          "remediation": "Use environment variables or a secret management system to provide the password at runtime.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "POSTGRES_PASSWORD: postgres",
+              "role": "config"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Use of weak cryptographic hash for password storage",
+          "cwe": "CWE-327",
+          "severity": "high",
+          "summary": "The `hash_password` function uses MD5 to hash passwords. MD5 is cryptographically broken and susceptible to collision attacks. Furthermore, because it is a fast hash and does not use a salt, it is highly vulnerable to precomputed rainbow table attacks and rapid brute-force attacks.",
+          "reasoning": "The code uses `hashlib.md5(password.encode()).hexdigest()` on line 16. This is used in both `register` (line 55) and `login` (line 67) to handle sensitive user credentials.",
+          "remediation": "Use a slow, salted, work-factor-based password hashing algorithm such as Argon2, bcrypt, or scrypt.",
+          "evidence": [
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "return hashlib.md5(password.encode()).hexdigest()",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Insecure Deserialization via Pickle",
+          "cwe": "CWE-502",
+          "severity": "critical",
+          "summary": "The `load_cart` function uses `pickle.loads` on data retrieved from the `cart` cookie. Since cookies can be modified by the client, an attacker can provide a malicious base64-encoded pickle payload to achieve arbitrary code execution on the server.",
+          "reasoning": "The code at line 32: `return jsonify(pickle.loads(base64.b64decode(legacy)))` takes data directly from a user-controlled cookie (`legacy`) and deserializes it using `pickle`, which is unsafe for untrusted input.",
+          "remediation": "Avoid using `pickle` for serializing data that is stored on the client side. Use a safe format like JSON instead.",
+          "evidence": [
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 32,
+              "end_line": 32,
+              "quote": "return jsonify(pickle.loads(base64.b64decode(legacy)))",
+              "role": "sink"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 30,
+              "end_line": 30,
+              "quote": "legacy = request.cookies.get(\"cart\")",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "Path Traversal in invoice download",
+          "cwe": "CWE-22",
+          "severity": "high",
+          "summary": "The `download_invoice` function uses a user-provided `name` parameter to construct a file path without validating that the resulting path remains within the intended directory. An attacker could provide a name containing path traversal sequences (e.g., `../../etc/passwd`) to read arbitrary files on the system, provided they can bypass the `os.path.isfile` check.",
+          "reasoning": "The `name` parameter from `request.args.get` (line 32) is joined with `config.INVOICE_DIR` and `g.user['uid']` (line 33). Because `os.path.join` will respect absolute paths or `..` components in the `name` argument, an attacker can escape the `INVOICE_DIR` directory. Unlike `brand_asset`, there is no check to ensure the final path is contained within the intended directory.",
+          "remediation": "Validate that the `name` parameter does not contain path traversal sequences or use `os.path.basename(name)` to ensure only the filename is used.",
+          "evidence": [
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 32,
+              "end_line": 33,
+              "quote": "name = request.args.get(\"name\", \"\")\n    path = os.path.join(config.INVOICE_DIR, str(g.user[\"uid\"]), name)",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 34,
+              "end_line": 34,
+              "quote": "if not os.path.isfile(path):",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Command Injection in `print_ticket`",
+          "cwe": "CWE-78",
+          "severity": "critical",
+          "summary": "The `print_ticket` function uses `shell=True` and interpolates the `printer` value from the request body directly into a command string. An attacker can provide a malicious string (e.g., `KITCHEN_1; rm -rf /`) to execute arbitrary commands on the server.",
+          "reasoning": "The variable `printer` is sourced from `request.get_json(force=True).get(\"printer\", \"KITCHEN_1\")` (line 26) and used in `subprocess.run(f\"lp -d {printer} {ticket}\", shell=True, ...)` (line 29). Since `shell=True` is used and the input is not validated against an allowlist or sanitized, it is vulnerable to command injection.",
+          "remediation": "Avoid using `shell=True`. Instead, pass the command and its arguments as a list to `subprocess.run`, and validate the `printer` input against a known allowlist of printer names.",
+          "evidence": [
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 26,
+              "end_line": 30,
+              "quote": "printer = request.get_json(force=True).get(\"printer\", \"KITCHEN_1\")\n    ticket = f\"/tmp/ticket-{order_id}.txt\"\n    result = subprocess.run(\n        f\"lp -d {printer} {ticket}\", shell=True, capture_output=True, text=True\n    )",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "f\"lp -d {printer} {ticket}\", shell=True, capture_output=True, text=True",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "orders-api/app/printing.py: lines corrected from 26-29"
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "Server-Side Request Forgery (SSRF) via product photo URL",
+          "cwe": "CWE-918",
+          "severity": "high",
+          "summary": "The `/admin/products/:id/photo` endpoint accepts a URL from the request body and uses it directly in a `fetch` call without validation or an allowlist. An authenticated staff member can use this to make the server perform requests to arbitrary internal or external locations.",
+          "reasoning": "The input `req.body.url` at line 21 is used as the target for `fetch` without any checks to ensure the URL belongs to a trusted domain or is not pointing to internal infrastructure (e.g., `http://localhost`, `http://169.254.169.254`).",
+          "remediation": "Implement an allowlist of permitted domains/URLs for product photos or validate that the URL is a public, non-internal IP address/domain before performing the fetch.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/media.js",
+              "start_line": 21,
+              "end_line": 21,
+              "quote": "const upstream = await fetch(req.body.url);",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "Mass Assignment in User Profile Update",
+          "cwe": "CWE-915",
+          "severity": "high",
+          "summary": "The `PATCH /profile` endpoint performs a mass assignment by merging the entire `req.body` object into the `req.user` object. An attacker can provide unexpected properties in the request body to modify sensitive user attributes, such as their role or permissions.",
+          "reasoning": "The code `Object.assign(req.user, req.body);` at line 13 takes all properties from the untrusted `req.body` and applies them to the `req.user` object without any filtering or allowlisting of which fields are permitted to be updated.",
+          "remediation": "Explicitly define which fields are allowed to be updated from the request body (e.g., `const { bio, displayName } = req.body; Object.assign(req.user, { bio, displayName });`) instead of passing the entire body object.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/profile.js",
+              "start_line": 13,
+              "end_line": 13,
+              "quote": "Object.assign(req.user, req.body);",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "Hardcoded sensitive secrets in environment configuration",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "The file contains hardcoded secrets (`JWT_SECRET` and `PAYMENT_MERCHANT_KEY`) which are used for authentication and third-party service integration. Hardcoding secrets in configuration files that are likely to be committed to version control increases the risk of unauthorized access to user sessions and financial services.",
+          "reasoning": "The values `bakery-lab-jwt-3f9a1c7e5b2d` (line 3) and `mk_bakery_lab_7f3a9c2e1b8d4f60` (line 4) are static strings stored in a configuration file. If this file is committed to a repository, these secrets are compromised.",
+          "remediation": "Move sensitive secrets to a dedicated secret management system (e.g., AWS Secrets Manager, HashiCorp Vault) or use environment variables that are injected at runtime and never committed to version control.",
+          "evidence": [
+            {
+              "path": "deploy/.env",
+              "start_line": 3,
+              "end_line": 3,
+              "quote": "JWT_SECRET=bakery-lab-jwt-3f9a1c7e5b2d",
+              "role": "source"
+            },
+            {
+              "path": "deploy/.env",
+              "start_line": 4,
+              "end_line": 4,
+              "quote": "PAYMENT_MERCHANT_KEY=mk_bakery_lab_7f3a9c2e1b8d4f60",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F010",
+          "title": "Hardcoded secret key",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "The `SECRET_KEY` is hardcoded in the source code, which can lead to compromise if the source code is exposed.",
+          "reasoning": "Line 6 contains a hardcoded string used for security-sensitive purposes.",
+          "remediation": "Load the secret key from an environment variable or a secure secret management system.",
+          "evidence": [
+            {
+              "path": "orders-api/app/config.py",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "SECRET_KEY = \"safia-orders-2024-prod-key\"",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F011",
+          "title": "Potential Arbitrary File Read",
+          "cwe": "CWE-427",
+          "severity": "medium",
+          "summary": "The `load_branch_settings` function opens a file at the provided `path` without validating that the path is restricted to an expected directory.",
+          "reasoning": "The function `load_branch_settings` uses `open(path)` directly. If an attacker can control the `path` argument, they can read arbitrary files on the system.",
+          "remediation": "Validate that the `path` is within an expected directory or use a whitelist of allowed files.",
+          "evidence": [
+            {
+              "path": "orders-api/app/config.py",
+              "start_line": 16,
+              "end_line": 19,
+              "quote": "def load_branch_settings(path):\n    \"\"\"Opening hours and delivery zones, edited by branch managers.\"\"\"\n    with open(path) as handle:\n        return yaml.safe_load(handle) or {}",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F012",
+          "title": "Debug mode enabled in production-ready configuration",
+          "cwe": "CWE-489",
+          "severity": "high",
+          "summary": "The application is configured to run with `debug=True` and listens on all network interfaces (`0.0.0.0`). Enabling debug mode in a non-development environment can lead to the exposure of sensitive source code, environment variables, and potentially allow arbitrary code execution via the interactive debugger.",
+          "reasoning": "Line 7: `app.run(host=\"0.0.0.0\", port=8000, debug=True)`",
+          "remediation": "Set `debug=False` for production environments and ensure the application binds to a specific, trusted interface (e.g., `127.0.0.1`) unless external access is explicitly required.",
+          "evidence": [
+            {
+              "path": "orders-api/run.py",
+              "start_line": 7,
+              "end_line": 7,
+              "quote": "app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F013",
+          "title": "Insecure JWT processing in attachUser",
+          "cwe": "CWE-345",
+          "severity": "high",
+          "summary": "The `attachUser` function uses `jwt.decode` instead of `jwt.verify`. `jwt.decode` merely parses the payload without verifying the cryptographic signature. An attacker can provide a self-signed or unsigned JWT with a `sub` claim corresponding to any user, and the middleware will attach that user's data to the request, effectively allowing identity spoofing if other parts of the application rely on `req.user` for authorization.",
+          "reasoning": "Line 11: `const claims = jwt.decode(header.slice(7));`",
+          "remediation": "Use `jwt.verify(token, JWT_SECRET)` instead of `jwt.decode(token)` to ensure the token's integrity and authenticity before trusting the claims.",
+          "evidence": [
+            {
+              "path": "storefront/src/middleware/auth.js",
+              "start_line": 11,
+              "end_line": 11,
+              "quote": "const claims = jwt.decode(header.slice(7));",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F014",
+          "title": "SQL Injection in search_orders",
+          "cwe": "CWE-89",
+          "severity": "critical",
+          "summary": "The `search_orders` endpoint interpolates the `customer` query parameter directly into a SQL query string, allowing for SQL injection.",
+          "reasoning": "The `term` variable is taken from `request.args.get(\"customer\", \"\")` and used in an f-string within `db.execute` on line 40: `f\"WHERE u.email LIKE '%{term}%' ORDER BY o.id DESC\"`. An attacker can provide a malicious string to manipulate the query.",
+          "remediation": "Use parameterized queries for the `LIKE` clause, for example: `db.execute(\"... WHERE u.email LIKE ? ...\", (f\"%{term}%\",))`.",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 37,
+              "end_line": 41,
+              "quote": "term = request.args.get(\"customer\", \"\")\n    rows = get_db().execute(\n        \"SELECT o.* FROM orders o JOIN users u ON u.id = o.user_id \"\n        f\"WHERE u.email LIKE '%{term}%' ORDER BY o.id DESC\"\n    ).fetchall()",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F015",
+          "title": "Insecure Direct Object Reference (IDOR) in get_order",
+          "cwe": "CWE-639",
+          "severity": "high",
+          "summary": "The `get_order` endpoint allows any authenticated user to view any order by its ID, as it fails to verify that the order belongs to the requesting user.",
+          "reasoning": "The function `get_order` retrieves an order by `order_id` but does not verify that `order[\"user_id\"] == g.user[\"uid\"]` before returning the data, unlike `cancel_order` which performs this check.",
+          "remediation": "Add a check to ensure the order's `user_id` matches the `g.user[\"uid\"]` before returning the order details.",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 45,
+              "end_line": 51,
+              "quote": "@bp.get(\"/orders/<int:order_id>\")\n@login_required\ndef get_order(order_id):\n    order = get_db().execute(\"SELECT * FROM orders WHERE id = ?\", (order_id,)).fetchone()\n    if order is None:\n        abort(404)\n    return jsonify(_row(order))",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F016",
+          "title": "Negative quantity allows price manipulation in create_order",
+          "cwe": "CWE-601",
+          "severity": "medium",
+          "summary": "The `create_order` endpoint does not validate that the quantity of an item is a positive integer, allowing users to potentially manipulate the total price by providing negative quantities.",
+          "reasoning": "In `create_order`, `qty = int(line[\"qty\"])` is performed on line 79, but there is no check to ensure `qty > 0`. A negative quantity would decrease the `total` calculated on line 80.",
+          "remediation": "Validate that `qty` is a positive integer before proceeding with the calculation.",
+          "evidence": [
+            {
+              "path": "orders-api/app/orders.py",
+              "start_line": 73,
+              "end_line": 81,
+              "quote": "for line in data.get(\"items\", []):\n    product = db.execute(\n        \"SELECT sku, price FROM products WHERE sku = ?\", (line[\"sku\"],)\n    ).fetchone()\n    if product is None:\n        abort(400)\n    qty = int(line[\"qty\"])\n    total += product[\"price\"] * qty\n    items.append({\"sku\": product[\"sku\"], \"qty\": qty})",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F017",
+          "title": "Stored Cross-Site Scripting (XSS) in product reviews",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The `GET /products/:id` endpoint renders review text directly into the HTML response without escaping. Since the `POST /products/:id/reviews` endpoint allows any authenticated user to submit arbitrary text, an attacker can inject malicious scripts into a review that will execute in the browser of any user viewing the product page.",
+          "reasoning": "In `storefront/src/routes/reviews.js`:\nLine 16: `.map((r) => `<li><b>${escapeHtml(r.author)}</b>: ${r.text}</li>`)`\nWhile `r.author` is escaped, `r.text` is concatenated directly into the template string. The data in `r.text` originates from `req.body.text` in the `POST` handler (line 26) and is never sanitized before being stored or rendered.",
+          "remediation": "Ensure that all user-provided content, including `r.text`, is passed through `escapeHtml()` before being rendered in the HTML response.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/reviews.js",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": ".map((r) => `<li><b>${escapeHtml(r.author)}</b>: ${r.text}</li>`)",
+              "role": "sink"
+            },
+            {
+              "path": "storefront/src/routes/reviews.js",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "text: String(req.body.text || ''),",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "patched": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "found": [],
+        "missed_count": 0,
+        "decoys_flagged": [],
+        "patched_still_flagged": [],
+        "unlisted": 0,
+        "weaknesses": 0,
+        "decoys": 12,
+        "patched": 17,
+        "seconds": 0.0,
+        "errors": []
+      },
+      "pair_accuracy": 0.0,
+      "findings_patched": []
+    }
+  ]
+}

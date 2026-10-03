@@ -1,0 +1,362 @@
+{
+  "summary": {
+    "model": "data/cache/ornith-9b-mlx-4bit",
+    "backend": "mlx",
+    "adapter": "data/finetune/adapter",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "think": "off",
+    "temperature": 0.0,
+    "planted_instructions": false,
+    "strip_comments": false,
+    "trust_boundary": true,
+    "twin_scanned": true,
+    "repeats": 1,
+    "recall": 0.294,
+    "precision": 0.833,
+    "decoys_flagged": 0.0,
+    "unlisted": 1.0,
+    "patched_still_flagged": 0.0,
+    "pair_accuracy": 0.294,
+    "discarded_bad_citation": 0.0,
+    "seconds_per_scan": 217.5,
+    "recall_per_run": [
+      0.294
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "vulnerable": {
+        "recall": 0.294,
+        "precision": 0.833,
+        "found": [
+          "V03",
+          "V07",
+          "V09",
+          "V14",
+          "V16"
+        ],
+        "missed_count": 12,
+        "decoys_flagged": [],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 17,
+        "decoys": 12,
+        "patched": 0,
+        "leads": 20,
+        "findings": 6,
+        "discarded_bad_citation": 0,
+        "seconds": 217.5,
+        "prompt_tokens": 19177,
+        "completion_tokens": 6008,
+        "errors": [
+          "orders-api/app/auth.py: model did not return valid JSON",
+          "orders-api/app/cart.py: model did not return valid JSON",
+          "orders-api/app/invoices.py: model did not return valid JSON",
+          "storefront/src/routes/media.js: model did not return valid JSON",
+          "storefront/src/routes/profile.js: model did not return valid JSON",
+          "orders-api/app/orders.py: model did not return valid JSON",
+          "storefront/src/server.js: model did not return valid JSON",
+          "semgrep failed: Fatal error: exception Invalid_argument: \"\": invalid path\nRaised at Stdlib.invalid_arg in file \"stdlib.ml\", line 30, characters 20-45\nCalled from Ca_certs.detect_one in file \"lib/ca_certs.ml\", line 13, characters 14-26\nCalled from Ca_certs.trust_anchors in file \"lib/ca_certs.ml\", line 153, character"
+        ]
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "OS Command Injection",
+          "cwe": "CWE-78",
+          "severity": "critical",
+          "summary": "The application constructs a shell command using untrusted input from a request body without proper sanitization or parameterization. An attacker can execute arbitrary system commands by injecting shell metacharacters.",
+          "reasoning": "The variable `printer` is retrieved from the request body (line 25) and is used directly in a string that is executed through a shell (line 28). An attacker can provide a value like `KITCHEN_1; touch /tmp/pwned` to execute additional commands.",
+          "remediation": "Avoid using shell execution when possible. If you must use a shell, ensure that all input is strictly validated against an allowlist of safe characters or use a list of arguments passed to the command without `shell=True`.",
+          "evidence": [
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "printer = request.get_json(force=True).get(\"printer\", \"KITCHEN_1\")",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 27,
+              "end_line": 29,
+              "quote": "result = subprocess.run(\n\t\tf\"lp -d {printer} {ticket}\", shell=True, capture_output=True, text=True\n\t)",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "orders-api/app/printing.py: lines corrected from 28-28"
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Hardcoded secrets in environment file",
+          "cwe": "CWE-501",
+          "severity": "high",
+          "summary": "The application uses hardcoded secrets (`JWT_SECRET`, `PAYMENT_MERCHANT_KEY`) stored in a configuration file. These should be moved to a secure secrets manager or environment variables to prevent them from being committed to version control and accessed via file system permissions.",
+          "reasoning": "The `JWT_SECRET` is used for signing and verifying JWTs, and the `PAYMENT_MERCHANT_KEY` is used for payment processing. Both are sensitive credentials. Hardcoding them in a file is insecure because the file may be committed to a public repository, and the credentials are not encrypted at rest.",
+          "remediation": "Use environment variables or a dedicated secrets management service (e.g., AWS Secrets Manager, Hashicorp Vault) to store and retrieve sensitive credentials at runtime.",
+          "evidence": [
+            {
+              "path": "deploy/.env",
+              "start_line": 2,
+              "end_line": 3,
+              "quote": "JWT_SECRET=bakery-lab-jwt-3f9a1c7e5b2d\nPAYMENT_MERCHANT_KEY=mk_bakery_lab_7f3a9c2e1b8d4f60",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": false,
+              "detail": "hedged: 'may'"
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Hardcoded secret",
+          "cwe": "CWE-501",
+          "severity": "high",
+          "summary": "The application uses a hardcoded string for its session key. An attacker can read the source code to obtain the key and hijack user sessions.",
+          "reasoning": "The `SECRET_KEY` is hardcoded in the `config.py` file. Session keys are sensitive credentials that should never be stored in source code.",
+          "remediation": "Store the `SECRET_KEY` in a secure environment variable or a dedicated secrets manager, not in the application source.",
+          "evidence": [
+            {
+              "path": "orders-api/app/config.py",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "SECRET_KEY = \"safia-orders-2024-prod-key\"",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Flask debug mode enabled for production",
+          "cwe": "CWE-501",
+          "severity": "critical",
+          "summary": "The application is running with `debug=True` in a production-like environment. This allows an attacker to access the Flask development server, which includes the local file system, and provides detailed error messages that can lead to information disclosure.",
+          "reasoning": "The `debug` parameter in `app.run` is set to `True`. In Flask, `debug=True` enables the `flask",
+          "remediation": "Disable the `debug` flag in production. Use `debug=False` or `flask.run` with `standard_mode=True` when deploying to a live environment.",
+          "evidence": [
+            {
+              "path": "orders-api/run.py",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "Reflected Cross-Site Scripting (XSS) via unvalidated product name",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The `get` handler takes user-supplied input from the `id` parameter and reflects it into the HTML response. Although `product.name` is used in the response, it is not HTML-escaped, allowing an attacker to inject malicious HTML/JavaScript into the page.",
+          "reasoning": "The `id` parameter is untrusted input from the `get` handler. It is used to find a product in the store. The `product.name` is then directly interpolated into the `h1` tag of the response string. Since `name` is not passed through `escapeHtml` (which is available in the `specials` module), an attacker can provide a value like `<script>alert(1)</script>` to execute arbitrary JavaScript in the context of the user's browser.",
+          "remediation": "Ensure that all user-controlled data is properly HTML-escaped before being included in an HTML response. In this case, use `escapeHtml` for the `product.name` variable when building the response string.",
+          "evidence": [
+            {
+              "path": "storefront/src/routes/reviews.js",
+              "start_line": 18,
+              "end_line": 18,
+              "quote": "res.send(`<h1>${escapeHtml(product.name)}</h1><ul>${items}</ul>`);",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Reflected Cross-Site Scripting (XSS) via unvalidated `author` field in `reviews`",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The `author` field in the `reviews` array is untrusted input. If it is reflected in the response body without proper HTML encoding, an attacker can inject malicious HTML/JavaScript into the page.",
+          "reasoning": "The `author` field is populated by the user and is not validated or escaped before being included in the response. An attacker can provide a value like `<script>alert(1)</script>`.",
+          "remediation": "Ensure that all user-controlled data is properly HTML-encoded before being included in an HTML response. Use a templating engine like EJS that performs automatic context-aware escaping.",
+          "evidence": [
+            {
+              "path": "storefront/src/lib/store.js",
+              "start_line": 8,
+              "end_line": 10,
+              "quote": "const reviews = [\n   { productId: 1, author: 'Dilnoza', text: 'Best honey cake in Tashkent.' },\n];",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        }
+      ],
+      "patched": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "found": [],
+        "missed_count": 0,
+        "decoys_flagged": [],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 0,
+        "decoys": 12,
+        "patched": 17,
+        "leads": 20,
+        "findings": 1,
+        "discarded_bad_citation": 0,
+        "seconds": 147.8,
+        "prompt_tokens": 19173,
+        "completion_tokens": 3459,
+        "errors": [
+          "orders-api/app/cart.py: model did not return valid JSON",
+          "orders-api/app/orders.py: model did not return valid JSON",
+          "storefront/src/routes/profile.js: model did not return valid JSON",
+          "storefront/src/server.js: model did not return valid JSON",
+          "semgrep failed: Fatal error: exception Invalid_argument: \"\": invalid path\nRaised at Stdlib.invalid_arg in file \"stdlib.ml\", line 30, characters 20-45\nCalled from Ca_certs.detect_one in file \"lib/ca_certs.ml\", line 13, characters 14-26\nCalled from Ca_certs.trust_anchors in file \"lib/ca_certs.ml\", line 153, character"
+        ]
+      },
+      "pair_accuracy": 0.294,
+      "findings_patched": [
+        {
+          "id": "F001",
+          "title": "Reflected Cross-Site Scripting (XSS) via unvalidated `author` field in `reviews`",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The `author` field in the `reviews` array is untrusted input. If it is reflected in the response body without proper HTML encoding, an attacker can inject malicious HTML/JavaScript into the page.",
+          "reasoning": "The `author` field is populated by the user and is not validated or escaped before being included in the response. An attacker can provide a value like `<script>alert(1)</script>`.",
+          "remediation": "Ensure that all user-controlled data is properly HTML-encoded before being included in an HTML response. Use a templating engine like EJS that performs automatic context-aware escaping.",
+          "evidence": [
+            {
+              "path": "storefront/src/lib/store.js",
+              "start_line": 8,
+              "end_line": 10,
+              "quote": "const reviews = [\n   { productId: 1, author: 'Dilnoza', text: 'Best honey cake in Tashkent.' },\n];",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "wording",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "scanner agreement",
+              "passed": false,
+              "detail": "no independent scanner was run"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

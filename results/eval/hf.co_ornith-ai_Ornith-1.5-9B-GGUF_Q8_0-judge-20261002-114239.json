@@ -1,0 +1,489 @@
+{
+  "summary": {
+    "model": "hf.co/ornith-ai/Ornith-1.5-9B-GGUF:Q8_0",
+    "mode": "judge",
+    "think": "off",
+    "temperature": 0.0,
+    "repeats": 1,
+    "recall": 0.412,
+    "precision": 0.778,
+    "decoys_flagged": 1.0,
+    "unlisted": 1.0,
+    "patched_still_flagged": 0.0,
+    "pair_accuracy": 0.412,
+    "discarded_bad_citation": 1.0,
+    "seconds_per_scan": 194.5,
+    "recall_per_run": [
+      0.412
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "vulnerable": {
+        "recall": 0.412,
+        "precision": 0.778,
+        "found": [
+          "V03",
+          "V05",
+          "V07",
+          "V08",
+          "V11",
+          "V13",
+          "V15"
+        ],
+        "missed_count": 10,
+        "decoys_flagged": [
+          "D04"
+        ],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 17,
+        "decoys": 12,
+        "patched": 0,
+        "leads": 17,
+        "findings": 9,
+        "discarded_bad_citation": 1,
+        "seconds": 194.5,
+        "prompt_tokens": 13797,
+        "completion_tokens": 4049,
+        "errors": []
+      },
+      "patched": {
+        "recall": 0.0,
+        "precision": 0.0,
+        "found": [],
+        "missed_count": 0,
+        "decoys_flagged": [],
+        "patched_still_flagged": [],
+        "unlisted": 1,
+        "weaknesses": 0,
+        "decoys": 12,
+        "patched": 17,
+        "leads": 15,
+        "findings": 1,
+        "discarded_bad_citation": 0,
+        "seconds": 54.9,
+        "prompt_tokens": 12663,
+        "completion_tokens": 665,
+        "errors": []
+      },
+      "pair_accuracy": 0.412,
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "Privileged container grants excessive capabilities",
+          "cwe": "CWE-255",
+          "severity": "high",
+          "summary": "Container runs in privileged mode, granting excessive host-level capabilities.",
+          "reasoning": "The orders-api service runs with the Linux CAP_SYS_ADMIN capability granted to the whole container. This gives the container process unrestricted control over the host kernel and device nodes, far beyond what the API needs to function. Combined with the host bind mount at line 5 (orders-data:/data), a compromise of the container yields host-level access. The fix is to remove privileged mode and instead drop capabilities (cap_drop) and set an appropriate user, matching the hardening already applied to the storefront service (lines 18-19).",
+          "remediation": "Remove 'privileged: true' from the orders-api service and replace it with least-privilege hardening, e.g. add 'cap_drop: [ALL]' and run as a non-root user, consistent with the storefront service.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "privileged: true",
+              "role": "sink"
+            },
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "8|     privileged: true",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Hardcoded database password",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "Database password is hardcoded with a guessable default value.",
+          "reasoning": "The database password is set to a hardcoded, guessable value ('postgres') directly in the compose file. This credential is committed to source control and readable by anyone with access to the repository, and it is also exposed in container runtime metadata and process listings. There is no allowlist, no parameterization, and no secret management in place. The fix is to source the value from a secret store or an environment file (e.g. env_file or a Docker secret) rather than embedding it in the file.",
+          "remediation": "Remove the hardcoded POSTGRES_PASSWORD and supply the value via a secret mechanism such as 'env_file', a Docker secret, or an external secrets manager, and ensure the file is not committed to version control.",
+          "evidence": [
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "POSTGRES_PASSWORD: postgres",
+              "role": "sink"
+            },
+            {
+              "path": "deploy/docker-compose.yml",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "25|       POSTGRES_PASSWORD: postgres",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Weak password hashing (MD5)",
+          "cwe": "CWE-916",
+          "severity": "high",
+          "summary": "Password hashing uses MD5, which is cryptographically broken and unsuitable for storing passwords.",
+          "reasoning": "Password hashing uses MD5, a broken cryptographic hash unsuitable for password storage. MD5 is fast and vulnerable to preimage attacks and rainbow-table lookups, so an attacker who obtains the database can recover plaintext passwords. The same weak hash is used both to store the hash (line 54) and to compare at login (line 66), so there is no defense in depth. Passwords should be hashed with a slow, memory-hard, salted algorithm such as bcrypt, scrypt, or Argon2.",
+          "remediation": "Replace MD5 with a purpose-built password hashing scheme. Use bcrypt, scrypt, or Argon2 for storage, e.g. passlib[bcrypt] or argon2-cffi, and store the salt/parameters inside the hash. Never use a fast general-purpose hash like MD5 for passwords.",
+          "evidence": [
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "return hashlib.md5(password.encode()).hexdigest()",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 54,
+              "end_line": 54,
+              "quote": "(data[\"email\"], hash_password(data[\"password\"])),",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "orders-api/app/auth.py: quote not found in orders-api/app/auth.py; 1 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Unvalidated authentication input",
+          "cwe": "CWE-347",
+          "severity": "medium",
+          "summary": "Auth endpoints use unvalidated request input for account creation and password comparison.",
+          "reasoning": "The /register and /login endpoints read attacker-controlled JSON and use it directly in authentication and account creation without any validation. The register endpoint inserts any provided email and password hash into the users table with no checks on format, length, or non-emptiness, so an attacker can create arbitrary accounts (account creation without authorization). The login endpoint compares the supplied password against a freshly computed MD5 hash, so an attacker can log in as any user by supplying that user's stored MD5 hash as the password (authentication bypass via hash comparison). Both endpoints also use force=True, which ignores Content-Type and accepts any body as JSON, widening the untrusted input surface.",
+          "remediation": "Validate and sanitize all request input before use. For register, require a non-empty, well-formed email and a strong password, and enforce authentication/authorization so unauthenticated users cannot self-register. For login, compare against a stored hash produced by a proper password hashing scheme rather than recomputing a hash of the submitted password. Avoid force=True; parse JSON with the correct Content-Type and handle missing/invalid input with a clear error.",
+          "evidence": [
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 50,
+              "end_line": 50,
+              "quote": "data = request.get_json(force=True)",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/auth.py",
+              "start_line": 54,
+              "end_line": 54,
+              "quote": "(data[\"email\"], hash_password(data[\"password\"])),",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "orders-api/app/auth.py: lines corrected from 62-62; orders-api/app/auth.py: quote not found in orders-api/app/auth.py; 2 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "Unsafe deserialization of untrusted cookie via pickle",
+          "cwe": "CWE-502",
+          "severity": "high",
+          "summary": "pickle.loads on untrusted cookie data enables arbitrary code execution (CWE-502) in load_cart.",
+          "reasoning": "The value comes from an untrusted HTTP request (the `cart_v2` cookie, line 26-27) and from the `cart` cookie (line 29-31). The `cart_v2` path is safe: it only base64-decodes and JSON-parses, which cannot execute code. The `legacy` path, however, calls pickle.loads on attacker-controlled bytes (line 31). pickle.loads executes arbitrary code during deserialisation, so a cookie value crafted by an attacker (e.g. via a cross-site script or a malicious server) can achieve remote code execution. There is no allowlist, no range check, and no alternative representation used here. The presence of `import pickle` (line 3) and the explicit comment about old mobile app carts (line 28) indicate this is an intentional, unnecessary deserialisation boundary. Fix: reject the legacy cookie entirely, or migrate its contents to the JSON `cart_v2` format and parse as JSON instead of unpickling.",
+          "remediation": "Remove the pickle branch. Either stop accepting the legacy `cart` cookie, or read it and convert it to the JSON `cart_v2` format, then parse with json.loads. Do not unpickle untrusted cookie data.",
+          "evidence": [
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 31,
+              "end_line": 31,
+              "quote": "return jsonify(pickle.loads(base64.b64decode(legacy)))",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "legacy = request.cookies.get(\"cart\")",
+              "role": "sink"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "if \"cart_v2\" in request.cookies:",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 27,
+              "end_line": 27,
+              "quote": "return jsonify(json.loads(base64.b64decode(request.cookies[\"cart_v2\"])))",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Path traversal via symlink in /brand/asset despite startswith guard (CWE-22)",
+          "cwe": "CWE-22",
+          "severity": "high",
+          "summary": "Path traversal via symlink in /brand/asset despite startswith guard (CWE-22) - the realpath-based allowlist is bypassed by symlinks placed inside BRAND_DIR that point outside it.",
+          "reasoning": "The `name` query parameter is attacker-controlled and concatenated into a filesystem path via os.path.join. Although the code checks that the realpath starts with root + os.sep, this allowlist is defeated by symlink attacks: an attacker can create a symlink inside BRAND_DIR that points outside of it. realpath resolves the symlink, so path can legitimately start with root + os.sep while still escaping the intended directory. The check therefore does not actually confine access to BRAND_DIR, so a symlink-based path traversal is possible. The flagged startswith check (line 21) is present but incorrect because it operates on the resolved path rather than preventing the symlink in the first place.",
+          "remediation": "Do not rely on a post-resolution prefix check. Instead, validate the input before joining: reject any name containing a path separator or '..' component, or resolve the candidate against a copy of the root and confirm the result is strictly inside root before opening it. Only open the file after that validation succeeds.",
+          "evidence": [
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 20,
+              "end_line": 20,
+              "quote": "path = os.path.realpath(os.path.join(root, name))",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/invoices.py",
+              "start_line": 21,
+              "end_line": 22,
+              "quote": "if not path.startswith(root + os.sep) or not os.path.isfile(path):\n    abort(404)",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "orders-api/app/invoices.py: lines corrected from 21-21"
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "OS command injection via untrusted printer name",
+          "cwe": "CWE-78",
+          "severity": "high",
+          "summary": "OS command injection via untrusted printer name passed to shell=True subprocess.",
+          "reasoning": "The printer name comes from untrusted JSON request data (line 25) and is interpolated into a shell command string (line 28) executed with shell=True (line 27-29). An attacker can inject additional shell commands via the printer value (e.g. \"KITCHEN_1; rm -rf /\"), so this is OS command injection. The ticket path is also attacker-influenced via order_id, though order_id is int-cast by the route so it is not the injection vector here. No allowlist or quoting mitigates it.",
+          "remediation": "Do not use shell=True. Call lpstat/lp via a list of arguments, and validate the printer against an allowlist (config.PRINTERS) before use. Build the ticket path from a validated order_id and pass it as an argument rather than interpolating into a shell string.",
+          "evidence": [
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 27,
+              "end_line": 29,
+              "quote": "result = subprocess.run(\n        f\"lp -d {printer} {ticket}\", shell=True, capture_output=True, text=True\n    )",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 25,
+              "end_line": 25,
+              "quote": "printer = request.get_json(force=True).get(\"printer\", \"KITCHEN_1\")",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/printing.py",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "ticket = f\"/tmp/ticket-{order_id}.txt\"",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "Hardcoded secret",
+          "cwe": "CWE-798",
+          "severity": "high",
+          "summary": "Hardcoded production SECRET_KEY in source instead of an environment-backed secret.",
+          "reasoning": "A production secret (SECRET_KEY, used to sign/verify session tokens) is hardcoded directly in source rather than read from an environment variable or secrets store. The value is a static string literal with no check, allowlist, or parameterisation, so anyone with read access to the repository or image has the key. It should be sourced from the environment (e.g. os.environ.get with a required fallback that fails on startup) instead of being committed.",
+          "remediation": "Load the key from the environment and refuse to start without it, e.g. SECRET_KEY = os.environ['SECRET_KEY'], and ensure the value is injected at deploy time via a secrets manager or environment, never committed to source control.",
+          "evidence": [
+            {
+              "path": "orders-api/app/config.py",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "SECRET_KEY = \"safia-orders-2024-prod-key\"",
+              "role": "config"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "JWT verified with decode instead of verify",
+          "cwe": "CWE-347",
+          "severity": "high",
+          "summary": "JWT is decoded without verification, allowing forged tokens to authenticate users.",
+          "reasoning": "The JWT is processed with jwt.decode(), which only base64-decodes the payload and performs no cryptographic verification. The token's integrity and authenticity are never checked, so a client can forge arbitrary claims (e.g. role, sub) and have them trusted. The decoded claims.sub is then used to look up and attach a user (lines 11-13), so a forged token directly yields an authenticated user. The token comes from the Authorization header (line 8) and ends up as req.user. The correct fix is to use jwt.verify() (as done correctly in verifyWebhook at line 32) to validate the signature before trusting the claims.",
+          "remediation": "Replace jwt.decode() with jwt.verify() to cryptographically validate the token signature before using its claims. For example: const claims = jwt.verify(header.slice(7), JWT_SECRET, { algorithms: ['HS256'] });",
+          "evidence": [
+            {
+              "path": "storefront/src/middleware/auth.js",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "const claims = jwt.decode(header.slice(7));",
+              "role": "sink"
+            },
+            {
+              "path": "storefront/src/middleware/auth.js",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "const header = req.headers.authorization || '';",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "findings_patched": [
+        {
+          "id": "F001",
+          "title": "Untrusted input stored in cookie and trusted on read",
+          "cwe": "CWE-516",
+          "severity": "medium",
+          "summary": "Untrusted JSON body written into a cookie with no sanitization, and the cookie is trusted on read with no validation (CWE-516).",
+          "reasoning": "The handler builds a cookie value from untrusted client input. request.get_json(force=True) accepts a body the attacker fully controls (force=True ignores content-type and will parse non-JSON as text), and that payload is written verbatim into a cookie via json.dumps with no sanitization. The cookie is HttpOnly and Secure, so it cannot be read by JS and must travel over TLS, but it is not HttpOnly-protected against XSS reads and, critically, it is not validated on read. On load_cart the server base64-decodes and json.loads the attacker-supplied cookie with no allowlist or structural check, so a malicious client can inject arbitrary JSON (e.g. a fake \"items\" array) and have the server trust it. This is a reflected/impersonation weakness: untrusted input flows straight into a state-bearing cookie and back into server logic without any check or encoding that would make it safe.",
+          "remediation": "Validate and sanitize the input before storing it, and validate on read. For example, reject/normalize items (types, sizes, allowed values) instead of trusting request.get_json(force=True); and on load_cart, reject cookies that are not valid base64 and whose decoded JSON matches an expected shape before json.loads. Consider signing the cookie (e.g. a server-generated token) instead of round-tripping raw client data.",
+          "evidence": [
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 13,
+              "end_line": 19,
+              "quote": "response.set_cookie(\n    \"cart_v2\",\n    base64.b64encode(json.dumps(items).encode()).decode(),\n    httponly=True,\n    secure=True,\n    samesite=\"Lax\",\n)",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "response = make_response(jsonify({\"saved\": len(items)}))",
+              "role": "source"
+            },
+            {
+              "path": "orders-api/app/cart.py",
+              "start_line": 20,
+              "end_line": 20,
+              "quote": "return response",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "orders-api/app/cart.py: lines corrected from 13-16; orders-api/app/cart.py: lines corrected from 11-12"
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

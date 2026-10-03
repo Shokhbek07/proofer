@@ -1,0 +1,476 @@
+{
+  "summary": {
+    "target": "dvwa",
+    "model": "none",
+    "mode": "semgrep",
+    "prompt": "plain",
+    "temperature": 0.0,
+    "repeats": 1,
+    "modules": 10,
+    "detected": 4.0,
+    "secure_flagged": 1.0,
+    "pair_accuracy": 0.3,
+    "other_findings_vulnerable": 3.0,
+    "other_findings_secure": 3.0,
+    "seconds_per_scan": 0.0,
+    "detected_per_run": [
+      4
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "detected": [
+        "brute",
+        "exec",
+        "sqli",
+        "sqli_blind"
+      ],
+      "missed": [
+        "csrf",
+        "open_redirect",
+        "upload",
+        "weak_id",
+        "xss_r",
+        "xss_s"
+      ],
+      "secure_flagged": [
+        "exec"
+      ],
+      "pair_correct": [
+        "brute",
+        "sqli",
+        "sqli_blind"
+      ],
+      "other_findings_vulnerable": 3,
+      "other_findings_secure": 3,
+      "stats_vulnerable": {
+        "leads": 0,
+        "findings": 10,
+        "discarded_bad_citation": 0,
+        "seconds": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "errors": []
+      },
+      "stats_secure": {
+        "leads": 0,
+        "findings": 5,
+        "discarded_bad_citation": 0,
+        "seconds": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "errors": []
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label)",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "\t$query  = \"SELECT * FROM `users` WHERE user = '$user' AND password = '$pass';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "md5-loose-equality",
+          "cwe": "CWE-697",
+          "severity": "medium",
+          "summary": "Make sure comparisons involving md5 values are strict (use `===` not `==`) to avoid type juggling issues",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "\tif( $result && mysqli_num_rows( $result ) == 1 ) {",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "exec-use",
+          "cwe": "CWE-94",
+          "severity": "medium",
+          "summary": "Executing non-constant commands. This can lead to command injection.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "\t\t$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "tainted-exec",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "\t\t$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "exec-use",
+          "cwe": "CWE-94",
+          "severity": "medium",
+          "summary": "Executing non-constant commands. This can lead to command injection.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 14,
+              "end_line": 14,
+              "quote": "\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "tainted-exec",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 14,
+              "end_line": 14,
+              "quote": "\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label)",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "sqli/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "\t\t\t$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label)",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "sqli/handler.php",
+              "start_line": 31,
+              "end_line": 31,
+              "quote": "\t\t\t$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label)",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 11,
+              "end_line": 11,
+              "quote": "\t\t\t$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F010",
+          "title": "tainted-sql-string",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "User data flows into this manually-constructed SQL string. User data can be safely inserted into SQL strings using prepared statements or an object-relational mapper (ORM). Manually-constructed SQL strings is a possible indicator of SQL injection, which could let an attacker steal or manipulate data from the database. Instead, use prepared statements (`$mysqli->prepare(\"INSERT INTO test(id, label)",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 32,
+              "end_line": 32,
+              "quote": "\t\t\t$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ],
+      "findings_secure": [
+        {
+          "id": "F001",
+          "title": "exec-use",
+          "cwe": "CWE-94",
+          "severity": "medium",
+          "summary": "Executing non-constant commands. This can lead to command injection.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 22,
+              "end_line": 22,
+              "quote": "\t\t\t$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "tainted-exec",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 22,
+              "end_line": 22,
+              "quote": "\t\t\t$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "exec-use",
+          "cwe": "CWE-94",
+          "severity": "medium",
+          "summary": "Executing non-constant commands. This can lead to command injection.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "\t\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "tainted-exec",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "User input is passed to a function that executes a shell command. This can lead to remote code execution.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "\t\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "unlink-use",
+          "cwe": "CWE-22",
+          "severity": "medium",
+          "summary": "Using user input when deleting files with `unlink()` is potentially dangerous. A malicious actor could use this to modify or access files they have no right to.",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "upload/handler.php",
+              "start_line": 54,
+              "end_line": 54,
+              "quote": "\t\t\tunlink( $temp_file );",
+              "role": "sink"
+            }
+          ],
+          "origin": "semgrep",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

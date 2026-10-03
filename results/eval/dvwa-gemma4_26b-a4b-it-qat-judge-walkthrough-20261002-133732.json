@@ -1,0 +1,619 @@
+{
+  "summary": {
+    "target": "dvwa",
+    "model": "gemma4:26b-a4b-it-qat",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "temperature": 0.0,
+    "repeats": 1,
+    "modules": 10,
+    "detected": 8.0,
+    "secure_flagged": 0.0,
+    "pair_accuracy": 0.8,
+    "other_findings_vulnerable": 3.0,
+    "other_findings_secure": 4.0,
+    "seconds_per_scan": 243.4,
+    "detected_per_run": [
+      8
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "detected": [
+        "brute",
+        "csrf",
+        "exec",
+        "open_redirect",
+        "sqli_blind",
+        "upload",
+        "xss_r",
+        "xss_s"
+      ],
+      "missed": [
+        "sqli",
+        "weak_id"
+      ],
+      "secure_flagged": [],
+      "pair_correct": [
+        "brute",
+        "csrf",
+        "exec",
+        "open_redirect",
+        "sqli_blind",
+        "upload",
+        "xss_r",
+        "xss_s"
+      ],
+      "other_findings_vulnerable": 3,
+      "other_findings_secure": 4,
+      "stats_vulnerable": {
+        "leads": 9,
+        "findings": 11,
+        "discarded_bad_citation": 0,
+        "seconds": 243.4,
+        "prompt_tokens": 7187,
+        "completion_tokens": 9336,
+        "errors": [
+          "sqli/handler.php: output budget exhausted before an answer"
+        ]
+      },
+      "stats_secure": {
+        "leads": 9,
+        "findings": 4,
+        "discarded_bad_citation": 0,
+        "seconds": 89.4,
+        "prompt_tokens": 10610,
+        "completion_tokens": 2815,
+        "errors": []
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "Cross-Site Request Forgery (CSRF)",
+          "cwe": "CWE-352",
+          "severity": "critical",
+          "summary": "The password change functionality is triggered via a GET request and lacks any CSRF tokens or validation. An attacker can trick a logged-in user into changing their password by inducing them to visit a malicious URL.",
+          "reasoning": "The code checks for the presence of `$_GET['Change']` (line 3) and immediately proceeds to update the password in the database (line 16) without verifying if the request was intentionally initiated by the user via a unique, unpredictable token.",
+          "remediation": "Use POST requests for state-changing operations and implement unique, per-session CSRF tokens that must be validated on the server side before processing the request.",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 3,
+              "end_line": 28,
+              "quote": "if( isset( $_GET[ 'Change' ] ) ) {\n\t// Get input\n\t$pass_new  = $_GET[ 'password_new' ];\n\t$pass_conf = $_GET[ 'password_conf' ];\n\n\t// Do the passwords match?\n\tif( $pass_new == $pass_conf ) {\n\t\t// They do!\n\t\t$pass_new = ((isset($GLOBALS[\"___mysqli_ston\"]) && is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_real_escape_string($GLOBALS[\"___mysqli_ston\"],  $pass_new ) : ((trigger_error(\"[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.\", E_USER_ERROR)) ? \"\" : \"\"));\n\t\t$pass_new = md5( $pass_new );\n\n\t\t// Update the database\n\t\t$current_user = dvwaCurrentUser();\n\t\t$insert = \"UPDATE `users` SET password = '$pass_new' WHERE user = '\" . $current_user . \"';\";\n\t\t$result = mysqli_query($GLOBALS[\"___mysqli_ston\"],  $insert ) or die( '<pre>' . ((is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_error($GLOBALS[\"___mysqli_ston\"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );\n\n\t\t// Feedback for the user\n\t\t$html .= \"<pre>Password Changed.</pre>\";\n\t}\n\telse {\n\t\t// Issue with passwords matching\n\t\t$html .= \"<pre>Passwords did not match.</pre>\";\n\t}\n\n\t((is_null($___mysqli_res = mysqli_close($GLOBALS[\"___mysqli_ston\"]))) ? false : $___mysqli_res);\n}",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "Use of Weak Cryptographic Hash",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "The application uses the MD5 hashing algorithm to secure passwords.",
+          "reasoning": "Line 12 uses `md5()` to hash the password before storing it in the database. MD5 is cryptographically broken and susceptible to collision attacks and rapid brute-forcing.",
+          "remediation": "Use a strong, slow, salted hashing algorithm such as Argon2 or bcrypt.",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "$pass_new = md5( $pass_new );",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "SQL Injection",
+          "cwe": "CWE-89",
+          "severity": "critical",
+          "summary": "The application constructs a SQL query by directly interpolating the 'username' and 'password' GET parameters into the query string. An attacker can manipulate these parameters to bypass authentication or extract data from the database.",
+          "reasoning": "The variables `$user` (line 5) and `$pass` (line 9) are taken directly from `$_GET` and used in the query on line 12: `SELECT * FROM `users` WHERE user = '$user' AND password = '$pass';`. There is no escaping or parameterization used.",
+          "remediation": "Use prepared statements with parameterized queries to separate the SQL command from the data.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 5,
+              "end_line": 12,
+              "quote": "$user = $_GET[ 'username' ];\n\n\t// Get password\n\t$pass = $_GET[ 'password' ];\n\t$pass = md5( $pass );\n\n\t// Check the database\n\t$query  = \"SELECT * FROM `users` WHERE user = '$user' AND password = '$pass';\";",
+              "role": "source"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "$query  = \"SELECT * FROM `users` WHERE user = '$user' AND password = '$pass';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Weak Cryptographic Hash",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "The application uses MD5 to hash the password before comparing it to the database. MD5 is cryptographically broken and susceptible to collision attacks and rapid brute-forcing.",
+          "reasoning": "Line 9 uses `md5()` to process the user-provided password.",
+          "remediation": "Use a strong, slow, salted hashing algorithm such as Argon2 or bcrypt.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 9,
+              "end_line": 9,
+              "quote": "$pass = md5( $pass );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "Cross-Site Scripting (XSS)",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The application reflects the 'username' and 'avatar' values directly into the HTML response without proper encoding. An attacker can inject malicious scripts via these parameters.",
+          "reasoning": "The `$user` variable (from `$_GET['username']`) is reflected on line 21, and the `$avatar` variable (from the database, which can be controlled via the SQL injection) is reflected on line 22.",
+          "remediation": "Use `htmlspecialchars()` when outputting user-controlled data into HTML context.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$user = $_GET[ 'username' ];",
+              "role": "source"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 21,
+              "end_line": 21,
+              "quote": "$html .= \"<p>Welcome to the password protected area {$user}</p>\";",
+              "role": "sink"
+            },
+            {
+              "path": "brute/handler.php",
+              "start_line": 22,
+              "end_line": 22,
+              "quote": "$html .= \"<img src=\\\"{$avatar}\\\" />\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "Command Injection",
+          "cwe": "CWE-78",
+          "severity": "critical",
+          "summary": "The application takes user-supplied input from the 'ip' parameter and concatenates it directly into a system command executed via `shell_exec`. An attacker can use shell metacharacters (e.g., `;`, `&`, `|`) to execute arbitrary commands on the server.",
+          "reasoning": "The variable `$target` is sourced from `$_REQUEST['ip']` (line 5). This value is used in a string concatenation to form `$cmd` in both the Windows (line 10) and *nix (line 14) execution paths. There is no validation or escaping applied to `$target` before it is passed to `shell_exec`.",
+          "remediation": "Avoid using shell execution functions with user input. If necessary, use `escapeshellarg()` to sanitize the input, or better yet, use built-in PHP functions to perform the intended task without invoking a shell.",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$target = $_REQUEST[ 'ip' ];",
+              "role": "source"
+            },
+            {
+              "path": "exec/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            },
+            {
+              "path": "exec/handler.php",
+              "start_line": 14,
+              "end_line": 14,
+              "quote": "$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F007",
+          "title": "Open Redirect",
+          "cwe": "CWE-601",
+          "severity": "low",
+          "summary": "The application uses an unvalidated user-supplied URL from the 'redirect' GET parameter in a Location header, allowing an attacker to perform an open redirect attack.",
+          "reasoning": "The code takes the value of `$_GET['redirect']` and passes it directly into the `header` function without any validation, allowlisting, or sanitization. An attacker can provide an external URL (e.g., `?redirect=https://malicious.com`), causing the user's browser to redirect to a site controlled by the attacker.",
+          "remediation": "Validate the redirect target against an allowlist of trusted domains or ensure the URL is a relative path starting with a single `/`.",
+          "evidence": [
+            {
+              "path": "open_redirect/handler.php",
+              "start_line": 3,
+              "end_line": 4,
+              "quote": "if (array_key_exists (\"redirect\", $_GET) && $_GET['redirect'] != \"\") {\n\theader (\"location: \" . $_GET['redirect']);",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F008",
+          "title": "Blind SQL Injection",
+          "cwe": "CWE-89",
+          "severity": "critical",
+          "summary": "The application uses untrusted input from `$_GET['id']` directly in SQL queries without proper parameterization or sanitization, enabling blind SQL injection attacks.",
+          "reasoning": "The variable `$id` is taken directly from the `$_GET['id']` superglobal (line 5). This variable is then concatenated into a SQL query string in two different execution paths: `case MYSQL` (line 11) and `case SQLITE` (line 32). There is no evidence of input validation, escaping, or the use of prepared statements to prevent an attacker from breaking out of the single quotes and injecting arbitrary SQL commands.",
+          "remediation": "Use prepared statements with parameterized queries (e.g., using `mysqli_prepare` or PDO) instead of string concatenation to ensure that user input is treated strictly as data and not as part of the SQL command.",
+          "evidence": [
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 5,
+              "end_line": 5,
+              "quote": "$id = $_GET[ 'id' ];",
+              "role": "source"
+            },
+            {
+              "path": "sqli_blind/handler.php",
+              "start_line": 11,
+              "end_line": 11,
+              "quote": "$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "sqli_blind/handler.php: lines corrected from 32-32; 1 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F009",
+          "title": "Arbitrary File Upload leading to Remote Code Execution",
+          "cwe": "CWE-434",
+          "severity": "critical",
+          "summary": "The application allows a user to upload a file with an arbitrary name and extension to a directory within the web root. An attacker can upload a malicious script (e.g., a PHP shell) and execute it by navigating to the file's URL.",
+          "reasoning": "The code uses `basename( $_FILES[ 'uploaded' ][ 'name' ] )` to determine the target filename. While `basename()` prevents directory traversal, it does nothing to prevent the upload of dangerous file extensions like `.php`. Since the target directory `hackable/uploads/` is within the web root, any uploaded script can be executed by the server.",
+          "remediation": "Implement a strict allowlist of permitted file extensions and MIME types. Additionally, ensure the upload directory is configured to prevent script execution (e.g., using `.htaccess` or web server configuration) and ideally store uploaded files outside of the web root.",
+          "evidence": [
+            {
+              "path": "upload/handler.php",
+              "start_line": 6,
+              "end_line": 6,
+              "quote": "$target_path .= basename( $_FILES[ 'uploaded' ][ 'name' ] );",
+              "role": "source"
+            },
+            {
+              "path": "upload/handler.php",
+              "start_line": 9,
+              "end_line": 9,
+              "quote": "if( !move_uploaded_file( $_FILES[ 'uploaded' ][ 'tmp_name' ], $target_path ) ) {",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "id": "F010",
+          "title": "Reflected Cross-Site Scripting (XSS)",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The application takes user-supplied input from the `name` GET parameter and reflects it directly into the HTML response without proper encoding. An attacker can inject malicious scripts into the page.",
+          "reasoning": "The variable `$_GET['name']` is used to build an HTML string on line 8: `$html .= '<pre>Hello ' . $_GET[ 'name' ] . '</pre>';`. There is no evidence of HTML entity encoding or sanitization applied to the input before it is rendered in the browser.",
+          "remediation": "Always encode user-supplied data before rendering it in an HTML context. Use `htmlspecialchars()` in PHP to convert special characters to HTML entities.",
+          "evidence": [
+            {
+              "path": "xss_r/handler.php",
+              "start_line": 8,
+              "end_line": 8,
+              "quote": "$html .= '<pre>Hello ' . $_GET[ 'name' ] . '</pre>';",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F011",
+          "title": "Stored Cross-Site Scripting (XSS) via unencoded database input",
+          "cwe": "CWE-79",
+          "severity": "high",
+          "summary": "The application takes user input from `$_POST['mtxMessage']` and `$_POST['txtName']`, escapes it for SQL syntax, and stores it in the database. However, the input is not HTML-encoded before being stored or (presumably) when being rendered. This allows an attacker to inject malicious HTML/JavaScript into the `guestbook` table, which will execute in the context of any user viewing the guestbook.",
+          "reasoning": "The variables `$message` (line 5) and `$name` (line 6) are taken directly from `$_POST`. They are processed with `mysqli_real_escape_string` (lines 10 and 13), which prevents SQL injection but does nothing to prevent XSS. The values are then inserted into the database (line 16). When these values are later retrieved and displayed in an HTML page, they will be interpreted as code by the browser unless they are encoded at the point of output.",
+          "remediation": "Always HTML-encode user-supplied data before rendering it in an HTML context (e.g., using `htmlspecialchars()` in PHP). Ideally, data should be stored in its raw form and encoded at the time of output to ensure the correct encoding for the specific output context (HTML, JavaScript, CSS, etc.).",
+          "evidence": [
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 5,
+              "end_line": 6,
+              "quote": "$message = trim( $_POST[ 'mtxMessage' ] );\n\t$name    = trim( $_POST[ 'txtName' ] );",
+              "role": "source"
+            },
+            {
+              "path": "xss_s/handler.php",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "$query  = \"INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "supported",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "findings_secure": [
+        {
+          "id": "F001",
+          "title": "Weak password hashing",
+          "cwe": "CWE-327",
+          "severity": "high",
+          "summary": "The application uses the MD5 hashing algorithm to process passwords (line 16). MD5 is cryptographically broken and susceptible to collision attacks and rapid brute-forcing, making it unsuitable for securing passwords.",
+          "reasoning": "Line 16: `$pass = md5( $pass );`",
+          "remediation": "Use a strong, slow, salted hashing algorithm such as Argon2 or bcrypt (e.g., `password_hash()` and `password_verify()` in PHP).",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "$pass = md5( $pass );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "User enumeration via lockout mechanism",
+          "cwe": "CWE-204",
+          "severity": "low",
+          "summary": "The application's lockout mechanism and error messages allow an attacker to distinguish between a valid username and an invalid one. If an account is locked, the application provides specific feedback (lines 85-86) and the logic in lines 30-50 explicitly checks for existing users to apply lockouts.",
+          "reasoning": "The application informs the user if an account is locked due to failed attempts (line 85) and the logic in lines 30-50 applies lockout logic only if a user is found in the database.",
+          "remediation": "Use generic error messages (e.g., 'Invalid username or password') and ensure that the response time and content are consistent regardless of whether the username exists or is locked.",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 30,
+              "end_line": 30,
+              "quote": "if( ( $data->rowCount() == 1 ) && ( $row[ 'failed_login' ] >= $total_failed_login ) )  {",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": "brute/handler.php: lines corrected from 30-31; brute/handler.php: quote not found in brute/handler.php; 1 unverifiable or duplicate citations removed"
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "Weak password hashing",
+          "cwe": "CWE-327",
+          "severity": "high",
+          "summary": "The application uses the MD5 hashing algorithm to process passwords (lines 15 and 29). MD5 is cryptographically broken and susceptible to collision attacks and rapid brute-forcing, making it unsuitable for securing passwords.",
+          "reasoning": "The code performs `md5( $pass_curr )` on line 15 and `md5( $pass_new )` on line 29 before storing or comparing them in the database.",
+          "remediation": "Use a strong, slow, salted hashing algorithm such as Argon2 or bcrypt (e.g., `password_hash()` in PHP).",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "$pass_curr = md5( $pass_curr );",
+              "role": "sink"
+            },
+            {
+              "path": "csrf/handler.php",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "$pass_new = md5( $pass_new );",
+              "role": "sink"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "Sensitive information in URL (GET request)",
+          "cwe": "CWE-598",
+          "severity": "medium",
+          "summary": "The application uses `$_GET` to collect the current and new passwords (lines 8-10). Sensitive information sent via GET requests is included in the URL, which can be leaked through browser history, web server logs, or the `Referer` header.",
+          "reasoning": "The variables `$pass_curr`, `$pass_new`, and `$pass_conf` are populated directly from `$_GET` on lines 8, 9, and 10.",
+          "remediation": "Use `$_POST` to transmit sensitive information like passwords.",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 8,
+              "end_line": 10,
+              "quote": "$pass_curr = $_GET[ 'password_current' ];\n\t$pass_new  = $_GET[ 'password_new' ];\n\t$pass_conf = $_GET[ 'password_conf' ];",
+              "role": "source"
+            }
+          ],
+          "origin": "agent",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "evidence",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

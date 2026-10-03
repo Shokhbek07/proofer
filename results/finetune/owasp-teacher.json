@@ -1,0 +1,1712 @@
+{
+  "summary": {
+    "label": "teacher",
+    "backend": "ollama",
+    "model": "gemma4:26b-a4b-it-qat",
+    "adapter": null,
+    "real": 61,
+    "fake": 64,
+    "true_positives": 39,
+    "false_positives": 27,
+    "tpr": 0.639,
+    "fpr": 0.422,
+    "score": 0.217,
+    "errors": 1,
+    "minutes": 31.7,
+    "by_category": {
+      "cmdi": {
+        "real": 4,
+        "fake": 2,
+        "true_positives": 4,
+        "false_positives": 1,
+        "tpr": 1.0,
+        "fpr": 0.5,
+        "score": 0.5
+      },
+      "codeinj": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 5,
+        "false_positives": 4,
+        "tpr": 1.0,
+        "fpr": 0.8,
+        "score": 0.2
+      },
+      "deserialization": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 4,
+        "false_positives": 2,
+        "tpr": 0.8,
+        "fpr": 0.4,
+        "score": 0.4
+      },
+      "hash": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 5,
+        "false_positives": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "score": 1.0
+      },
+      "ldapi": {
+        "real": 5,
+        "fake": 4,
+        "true_positives": 5,
+        "false_positives": 4,
+        "tpr": 1.0,
+        "fpr": 1.0,
+        "score": 0.0
+      },
+      "pathtraver": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 4,
+        "false_positives": 5,
+        "tpr": 0.8,
+        "fpr": 1.0,
+        "score": -0.2
+      },
+      "redirect": {
+        "real": 4,
+        "fake": 5,
+        "true_positives": 4,
+        "false_positives": 3,
+        "tpr": 1.0,
+        "fpr": 0.6,
+        "score": 0.4
+      },
+      "securecookie": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 0,
+        "false_positives": 0,
+        "tpr": 0.0,
+        "fpr": 0.0,
+        "score": 0.0
+      },
+      "sqli": {
+        "real": 1,
+        "fake": 3,
+        "true_positives": 0,
+        "false_positives": 0,
+        "tpr": 0.0,
+        "fpr": 0.0,
+        "score": 0.0
+      },
+      "trustbound": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 0,
+        "false_positives": 0,
+        "tpr": 0.0,
+        "fpr": 0.0,
+        "score": 0.0
+      },
+      "weakrand": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 0,
+        "false_positives": 0,
+        "tpr": 0.0,
+        "fpr": 0.0,
+        "score": 0.0
+      },
+      "xpathi": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 4,
+        "false_positives": 4,
+        "tpr": 0.8,
+        "fpr": 0.8,
+        "score": 0.0
+      },
+      "xss": {
+        "real": 5,
+        "fake": 5,
+        "true_positives": 2,
+        "false_positives": 2,
+        "tpr": 0.4,
+        "fpr": 0.4,
+        "score": 0.0
+      },
+      "xxe": {
+        "real": 2,
+        "fake": 5,
+        "true_positives": 2,
+        "false_positives": 2,
+        "tpr": 1.0,
+        "fpr": 0.4,
+        "score": 0.6
+      }
+    }
+  },
+  "rows": [
+    {
+      "name": "BenchmarkTest00010",
+      "category": "pathtraver",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 34.8,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00071",
+      "category": "trustbound",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.2,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00074",
+      "category": "codeinj",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.1,
+      "cwes": [
+        "CWE-95"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00077",
+      "category": "ldapi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 21.9,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00079",
+      "category": "deserialization",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.8,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00087",
+      "category": "pathtraver",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 4.6,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00117",
+      "category": "weakrand",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.5,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00127",
+      "category": "weakrand",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 1,
+      "error": "",
+      "seconds": 14.6,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00146",
+      "category": "hash",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.3,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00154",
+      "category": "trustbound",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.7,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00161",
+      "category": "codeinj",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 13.5,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00162",
+      "category": "codeinj",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.8,
+      "cwes": [
+        "CWE-95"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00166",
+      "category": "cmdi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.6,
+      "cwes": [
+        "CWE-78"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00167",
+      "category": "cmdi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.6,
+      "cwes": [
+        "CWE-78"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00192",
+      "category": "sqli",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 8.3,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00212",
+      "category": "xpathi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.0,
+      "cwes": [
+        "CWE-91"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00226",
+      "category": "weakrand",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.3,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00240",
+      "category": "weakrand",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.8,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00261",
+      "category": "trustbound",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 11.4,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00262",
+      "category": "trustbound",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.2,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00265",
+      "category": "ldapi",
+      "real": true,
+      "flagged": true,
+      "findings": 2,
+      "discarded": 0,
+      "error": "",
+      "seconds": 25.0,
+      "cwes": [
+        "CWE-90",
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00267",
+      "category": "cmdi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.9,
+      "cwes": [
+        "CWE-78"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00342",
+      "category": "codeinj",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.8,
+      "cwes": [
+        "CWE-95"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00346",
+      "category": "codeinj",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 12.4,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00352",
+      "category": "pathtraver",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.1,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00355",
+      "category": "pathtraver",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.4,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00356",
+      "category": "pathtraver",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.5,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00417",
+      "category": "redirect",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.0,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00421",
+      "category": "trustbound",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.2,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00424",
+      "category": "codeinj",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.8,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00430",
+      "category": "ldapi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.2,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00431",
+      "category": "cmdi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.9,
+      "cwes": [
+        "CWE-78"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00433",
+      "category": "deserialization",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 13.4,
+      "cwes": [
+        "CWE-502"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00435",
+      "category": "deserialization",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.0,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00445",
+      "category": "pathtraver",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 13.3,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00450",
+      "category": "xss",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 1,
+      "error": "",
+      "seconds": 17.3,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00452",
+      "category": "xss",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.2,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00453",
+      "category": "xss",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 1,
+      "error": "",
+      "seconds": 28.3,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00455",
+      "category": "sqli",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 2,
+      "error": "",
+      "seconds": 30.1,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00459",
+      "category": "xxe",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.9,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00492",
+      "category": "hash",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 13.1,
+      "cwes": [
+        "CWE-532"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00501",
+      "category": "trustbound",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.5,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00510",
+      "category": "deserialization",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.9,
+      "cwes": [
+        "CWE-502"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00515",
+      "category": "xss",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 1,
+      "error": "",
+      "seconds": 17.5,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00516",
+      "category": "pathtraver",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.9,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00533",
+      "category": "xss",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.7,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00536",
+      "category": "xpathi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.0,
+      "cwes": [
+        "CWE-643"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00538",
+      "category": "xxe",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.7,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00541",
+      "category": "xxe",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 13.9,
+      "cwes": [
+        "CWE-611"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00554",
+      "category": "xpathi",
+      "real": true,
+      "flagged": true,
+      "findings": 2,
+      "discarded": 0,
+      "error": "",
+      "seconds": 23.8,
+      "cwes": [
+        "CWE-91",
+        "CWE-611"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00560",
+      "category": "weakrand",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.5,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00573",
+      "category": "weakrand",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 9.7,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00592",
+      "category": "securecookie",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.2,
+      "cwes": [
+        "CWE-352"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00596",
+      "category": "redirect",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.2,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00598",
+      "category": "redirect",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.1,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00611",
+      "category": "pathtraver",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.6,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00641",
+      "category": "hash",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 9.7,
+      "cwes": [
+        "CWE-327"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00642",
+      "category": "hash",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 10.7,
+      "cwes": [
+        "CWE-327"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00653",
+      "category": "securecookie",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.9,
+      "cwes": [
+        "CWE-352"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00655",
+      "category": "redirect",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.7,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00656",
+      "category": "trustbound",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.2,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00657",
+      "category": "deserialization",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 1,
+      "error": "",
+      "seconds": 16.8,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00671",
+      "category": "xss",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.6,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00687",
+      "category": "xpathi",
+      "real": false,
+      "flagged": true,
+      "findings": 2,
+      "discarded": 0,
+      "error": "",
+      "seconds": 21.7,
+      "cwes": [
+        "CWE-91",
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00708",
+      "category": "hash",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 10.8,
+      "cwes": [
+        "CWE-327"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00710",
+      "category": "hash",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.1,
+      "cwes": [
+        "CWE-532"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00718",
+      "category": "securecookie",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.5,
+      "cwes": [
+        "CWE-352"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00720",
+      "category": "securecookie",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.6,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00721",
+      "category": "securecookie",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.0,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00722",
+      "category": "redirect",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.8,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00723",
+      "category": "redirect",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.1,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00725",
+      "category": "trustbound",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.3,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00729",
+      "category": "codeinj",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.0,
+      "cwes": [
+        "CWE-95"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00731",
+      "category": "ldapi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.2,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00732",
+      "category": "ldapi",
+      "real": false,
+      "flagged": true,
+      "findings": 2,
+      "discarded": 0,
+      "error": "",
+      "seconds": 26.5,
+      "cwes": [
+        "CWE-90",
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00733",
+      "category": "ldapi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.3,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00751",
+      "category": "pathtraver",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.9,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00755",
+      "category": "sqli",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.4,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00760",
+      "category": "xpathi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.1,
+      "cwes": [
+        "CWE-91"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00764",
+      "category": "xpathi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 19.0,
+      "cwes": [
+        "CWE-643"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00796",
+      "category": "hash",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 10.2,
+      "cwes": [
+        "CWE-327"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00811",
+      "category": "securecookie",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.0,
+      "cwes": [
+        "CWE-352"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00812",
+      "category": "securecookie",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.7,
+      "cwes": [
+        "CWE-330"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00813",
+      "category": "securecookie",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.7,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00814",
+      "category": "redirect",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.2,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00818",
+      "category": "codeinj",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 13.3,
+      "cwes": [
+        "CWE-95"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00819",
+      "category": "codeinj",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 11.2,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00850",
+      "category": "xxe",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.1,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00871",
+      "category": "weakrand",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "runtime returned 500: {\"error\":\"prediction aborted, token repeat limit reached\"}",
+      "seconds": 0.0,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00876",
+      "category": "hash",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.9,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest00883",
+      "category": "xss",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.9,
+      "cwes": [
+        "CWE-113"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00885",
+      "category": "securecookie",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.8,
+      "cwes": [
+        "CWE-352"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00887",
+      "category": "trustbound",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.4,
+      "cwes": [
+        "CWE-319"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00888",
+      "category": "trustbound",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.0,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00896",
+      "category": "ldapi",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.2,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00898",
+      "category": "deserialization",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.8,
+      "cwes": [
+        "CWE-502"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00903",
+      "category": "deserialization",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 21.5,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00907",
+      "category": "pathtraver",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.2,
+      "cwes": [
+        "CWE-22"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00924",
+      "category": "xss",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 27.7,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00929",
+      "category": "xpathi",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 1,
+      "error": "",
+      "seconds": 19.3,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00941",
+      "category": "xpathi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.0,
+      "cwes": [
+        "CWE-643"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00973",
+      "category": "hash",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 1,
+      "error": "",
+      "seconds": 14.6,
+      "cwes": [
+        "CWE-327"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00981",
+      "category": "securecookie",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.9,
+      "cwes": [
+        "CWE-352"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00982",
+      "category": "redirect",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.3,
+      "cwes": [
+        "CWE-601"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00989",
+      "category": "codeinj",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.6,
+      "cwes": [
+        "CWE-94"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00990",
+      "category": "ldapi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 20.3,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00994",
+      "category": "deserialization",
+      "real": true,
+      "flagged": true,
+      "findings": 2,
+      "discarded": 0,
+      "error": "",
+      "seconds": 20.0,
+      "cwes": [
+        "CWE-502",
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest00995",
+      "category": "deserialization",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.0,
+      "cwes": [
+        "CWE-502"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01003",
+      "category": "xss",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 15.8,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01024",
+      "category": "xxe",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.0,
+      "cwes": [
+        "CWE-611"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01028",
+      "category": "xpathi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.8,
+      "cwes": [
+        "CWE-91"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01050",
+      "category": "weakrand",
+      "real": true,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 17.4,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01075",
+      "category": "hash",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.4,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest01098",
+      "category": "cmdi",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 6.5,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest01126",
+      "category": "weakrand",
+      "real": true,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.9,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest01140",
+      "category": "weakrand",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.7,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest01159",
+      "category": "redirect",
+      "real": false,
+      "flagged": false,
+      "findings": 0,
+      "discarded": 0,
+      "error": "",
+      "seconds": 5.6,
+      "cwes": []
+    },
+    {
+      "name": "BenchmarkTest01169",
+      "category": "ldapi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.9,
+      "cwes": [
+        "CWE-90"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01173",
+      "category": "cmdi",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 20.1,
+      "cwes": [
+        "CWE-78"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01203",
+      "category": "sqli",
+      "real": false,
+      "flagged": false,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.0,
+      "cwes": [
+        "CWE-306"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01211",
+      "category": "xxe",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 14.7,
+      "cwes": [
+        "CWE-611"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01212",
+      "category": "xxe",
+      "real": true,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 12.9,
+      "cwes": [
+        "CWE-611"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01218",
+      "category": "xpathi",
+      "real": true,
+      "flagged": false,
+      "findings": 2,
+      "discarded": 0,
+      "error": "",
+      "seconds": 18.5,
+      "cwes": [
+        "CWE-94",
+        "CWE-611"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01224",
+      "category": "xss",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 16.5,
+      "cwes": [
+        "CWE-79"
+      ]
+    },
+    {
+      "name": "BenchmarkTest01230",
+      "category": "deserialization",
+      "real": false,
+      "flagged": true,
+      "findings": 1,
+      "discarded": 0,
+      "error": "",
+      "seconds": 12.2,
+      "cwes": [
+        "CWE-502"
+      ]
+    }
+  ]
+}

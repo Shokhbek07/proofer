@@ -1,0 +1,324 @@
+== repeat 1/1: vulnerable tree
+[1/20] deploy/docker-compose.yml
+      2 kept, 0 discarded, 21s
+[2/20] orders-api/app/auth.py
+      2 kept, 0 discarded, 32s
+[3/20] orders-api/app/cart.py
+      0 kept, 0 discarded, 29s
+[4/20] orders-api/app/invoices.py
+      3 kept, 0 discarded, 43s
+[5/20] orders-api/app/printing.py
+      1 kept, 0 discarded, 19s
+[6/20] storefront/src/routes/media.js
+      3 kept, 0 discarded, 38s
+[7/20] storefront/src/routes/profile.js
+      2 kept, 0 discarded, 29s
+[8/20] deploy/.env
+      1 kept, 0 discarded, 13s
+[9/20] orders-api/app/config.py
+      0 kept, 0 discarded, 10s
+[10/20] orders-api/run.py
+      1 kept, 0 discarded, 12s
+[11/20] storefront/src/lib/specials.js
+      0 kept, 0 discarded, 5s
+[12/20] storefront/src/middleware/auth.js
+      1 kept, 0 discarded, 16s
+[13/20] orders-api/app/orders.py
+      1 kept, 0 discarded, 26s
+[14/20] storefront/src/routes/reviews.js
+      2 kept, 0 discarded, 28s
+[15/20] storefront/src/server.js
+      1 kept, 0 discarded, 16s
+[16/20] orders-api/Dockerfile
+      2 kept, 0 discarded, 18s
+[17/20] orders-api/app/__init__.py
+      0 kept, 0 discarded, 5s
+[18/20] orders-api/app/db.py
+      1 kept, 0 discarded, 18s
+[19/20] storefront/Dockerfile
+      0 kept, 1 discarded, 13s
+[20/20] storefront/src/lib/store.js
+      0 kept, 0 discarded, 12s
+== repeat 1/1: patched twin
+[1/20] orders-api/app/invoices.py
+      3 kept, 0 discarded, 44s
+[2/20] orders-api/app/printing.py
+      1 kept, 0 discarded, 21s
+[3/20] storefront/src/routes/media.js
+      1 kept, 0 discarded, 20s
+[4/20] storefront/src/lib/specials.js
+      0 kept, 0 discarded, 5s
+[5/20] orders-api/app/auth.py
+      2 kept, 0 discarded, 25s
+[6/20] orders-api/app/cart.py
+      3 kept, 0 discarded, 36s
+[7/20] orders-api/app/orders.py
+      1 kept, 0 discarded, 28s
+[8/20] storefront/src/routes/profile.js
+      3 kept, 0 discarded, 38s
+[9/20] storefront/src/routes/reviews.js
+      0 kept, 0 discarded, 31s
+[10/20] storefront/src/server.js
+      1 kept, 0 discarded, 18s
+[11/20] deploy/.env
+      3 kept, 0 discarded, 23s
+[12/20] deploy/docker-compose.yml
+      2 kept, 0 discarded, 24s
+[13/20] orders-api/Dockerfile
+      1 kept, 0 discarded, 16s
+[14/20] orders-api/app/__init__.py
+      0 kept, 0 discarded, 5s
+[15/20] orders-api/app/config.py
+      1 kept, 0 discarded, 26s
+[16/20] orders-api/app/db.py
+      1 kept, 0 discarded, 17s
+[17/20] orders-api/run.py
+      0 kept, 0 discarded, 6s
+[18/20] storefront/Dockerfile
+      0 kept, 1 discarded, 13s
+[19/20] storefront/src/lib/store.js
+      0 kept, 0 discarded, 12s
+[20/20] storefront/src/middleware/auth.js
+      0 kept, 0 discarded, 17s
+details: runs/eval/data_cache_ornith-9b-mlx-4bit-judge-walkthrough-20261003-071423.json
+{
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "backend": "mlx",
+  "adapter": null,
+  "mode": "judge",
+  "prompt": "walkthrough",
+  "think": "off",
+  "temperature": 0.0,
+  "planted_instructions": false,
+  "strip_comments": false,
+  "trust_boundary": true,
+  "twin_scanned": true,
+  "repeats": 1,
+  "recall": 0.765,
+  "precision": 0.65,
+  "decoys_flagged": 4.0,
+  "unlisted": 3.0,
+  "patched_still_flagged": 9.0,
+  "pair_accuracy": 0.294,
+  "discarded_bad_citation": 1.0,
+  "seconds_per_scan": 402.6,
+  "recall_per_run": [
+    0.765
+  ]
+}
+== repeat 1/1: vulnerable tree
+[1/20] deploy/docker-compose.yml
+      0 kept, 0 discarded, 6s
+[2/20] orders-api/app/auth.py
+      0 kept, 0 discarded, 14s
+[3/20] orders-api/app/cart.py
+      0 kept, 0 discarded, 11s
+[4/20] orders-api/app/invoices.py
+      0 kept, 0 discarded, 20s
+[5/20] orders-api/app/printing.py
+      1 kept, 0 discarded, 17s
+[6/20] storefront/src/routes/media.js
+      0 kept, 0 discarded, 13s
+[7/20] storefront/src/routes/profile.js
+      0 kept, 0 discarded, 12s
+[8/20] deploy/.env
+      1 kept, 0 discarded, 12s
+[9/20] orders-api/app/config.py
+      1 kept, 0 discarded, 9s
+[10/20] orders-api/run.py
+      1 kept, 0 discarded, 9s
+[11/20] storefront/src/lib/specials.js
+      0 kept, 0 discarded, 4s
+[12/20] storefront/src/middleware/auth.js
+      0 kept, 0 discarded, 9s
+[13/20] orders-api/app/orders.py
+      0 kept, 0 discarded, 11s
+[14/20] storefront/src/routes/reviews.js
+      1 kept, 0 discarded, 19s
+[15/20] storefront/src/server.js
+      0 kept, 0 discarded, 20s
+[16/20] orders-api/Dockerfile
+      0 kept, 0 discarded, 4s
+[17/20] orders-api/app/__init__.py
+      0 kept, 0 discarded, 4s
+[18/20] orders-api/app/db.py
+      0 kept, 0 discarded, 6s
+[19/20] storefront/Dockerfile
+      0 kept, 0 discarded, 4s
+[20/20] storefront/src/lib/store.js
+      1 kept, 0 discarded, 15s
+== repeat 1/1: patched twin
+[1/20] orders-api/app/invoices.py
+      0 kept, 0 discarded, 6s
+[2/20] orders-api/app/printing.py
+      0 kept, 0 discarded, 10s
+[3/20] storefront/src/routes/media.js
+      0 kept, 0 discarded, 9s
+[4/20] storefront/src/lib/specials.js
+      0 kept, 0 discarded, 4s
+[5/20] orders-api/app/auth.py
+      0 kept, 0 discarded, 6s
+[6/20] orders-api/app/cart.py
+      0 kept, 0 discarded, 13s
+[7/20] orders-api/app/orders.py
+      0 kept, 0 discarded, 12s
+[8/20] storefront/src/routes/profile.js
+      0 kept, 0 discarded, 13s
+[9/20] storefront/src/routes/reviews.js
+      0 kept, 0 discarded, 7s
+[10/20] storefront/src/server.js
+      0 kept, 0 discarded, 10s
+[11/20] deploy/.env
+      0 kept, 0 discarded, 5s
+[12/20] deploy/docker-compose.yml
+      0 kept, 0 discarded, 4s
+[13/20] orders-api/Dockerfile
+      0 kept, 0 discarded, 4s
+[14/20] orders-api/app/__init__.py
+      0 kept, 0 discarded, 4s
+[15/20] orders-api/app/config.py
+      0 kept, 0 discarded, 4s
+[16/20] orders-api/app/db.py
+      0 kept, 0 discarded, 6s
+[17/20] orders-api/run.py
+      0 kept, 0 discarded, 4s
+[18/20] storefront/Dockerfile
+      0 kept, 0 discarded, 4s
+[19/20] storefront/src/lib/store.js
+      1 kept, 0 discarded, 15s
+[20/20] storefront/src/middleware/auth.js
+      0 kept, 0 discarded, 8s
+details: runs/eval/data_cache_ornith-9b-mlx-4bit-judge-walkthrough-tuned-20261003-072743.json
+{
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "backend": "mlx",
+  "adapter": "data/finetune/adapter",
+  "mode": "judge",
+  "prompt": "walkthrough",
+  "think": "off",
+  "temperature": 0.0,
+  "planted_instructions": false,
+  "strip_comments": false,
+  "trust_boundary": true,
+  "twin_scanned": true,
+  "repeats": 1,
+  "recall": 0.294,
+  "precision": 0.833,
+  "decoys_flagged": 0.0,
+  "unlisted": 1.0,
+  "patched_still_flagged": 0.0,
+  "pair_accuracy": 0.294,
+  "discarded_bad_citation": 0.0,
+  "seconds_per_scan": 217.5,
+  "recall_per_run": [
+    0.294
+  ]
+}
+== repeat 1/1: vulnerable tree
+[1/20] deploy/docker-compose.yml
+      1 kept, 0 discarded, 11s
+[2/20] orders-api/app/auth.py
+      0 kept, 0 discarded, 7s
+[3/20] orders-api/app/cart.py
+      0 kept, 0 discarded, 4s
+[4/20] orders-api/app/invoices.py
+      1 kept, 0 discarded, 13s
+[5/20] orders-api/app/printing.py
+      0 kept, 0 discarded, 6s
+[6/20] storefront/src/routes/media.js
+      0 kept, 0 discarded, 6s
+[7/20] storefront/src/routes/profile.js
+      0 kept, 0 discarded, 5s
+[8/20] deploy/.env
+      0 kept, 0 discarded, 3s
+[9/20] orders-api/app/config.py
+      0 kept, 0 discarded, 8s
+[10/20] orders-api/run.py
+      0 kept, 0 discarded, 9s
+[11/20] storefront/src/lib/specials.js
+      1 kept, 0 discarded, 10s
+[12/20] storefront/src/middleware/auth.js
+      0 kept, 0 discarded, 6s
+[13/20] orders-api/app/orders.py
+      0 kept, 0 discarded, 9s
+[14/20] storefront/src/routes/reviews.js
+      0 kept, 1 discarded, 14s
+[15/20] storefront/src/server.js
+      0 kept, 0 discarded, 6s
+[16/20] orders-api/Dockerfile
+      0 kept, 0 discarded, 4s
+[17/20] orders-api/app/__init__.py
+      0 kept, 0 discarded, 8s
+[18/20] orders-api/app/db.py
+      0 kept, 0 discarded, 7s
+[19/20] storefront/Dockerfile
+      0 kept, 0 discarded, 4s
+[20/20] storefront/src/lib/store.js
+      0 kept, 0 discarded, 3s
+== repeat 1/1: patched twin
+[1/20] orders-api/app/invoices.py
+      1 kept, 0 discarded, 10s
+[2/20] orders-api/app/printing.py
+      0 kept, 0 discarded, 8s
+[3/20] storefront/src/routes/media.js
+      0 kept, 0 discarded, 6s
+[4/20] storefront/src/lib/specials.js
+      1 kept, 0 discarded, 10s
+[5/20] orders-api/app/auth.py
+      0 kept, 0 discarded, 6s
+[6/20] orders-api/app/cart.py
+      0 kept, 0 discarded, 13s
+[7/20] orders-api/app/orders.py
+      0 kept, 0 discarded, 9s
+[8/20] storefront/src/routes/profile.js
+      0 kept, 0 discarded, 16s
+[9/20] storefront/src/routes/reviews.js
+      1 kept, 0 discarded, 17s
+[10/20] storefront/src/server.js
+      0 kept, 0 discarded, 6s
+[11/20] deploy/.env
+      0 kept, 0 discarded, 2s
+[12/20] deploy/docker-compose.yml
+      0 kept, 0 discarded, 3s
+[13/20] orders-api/Dockerfile
+      0 kept, 0 discarded, 3s
+[14/20] orders-api/app/__init__.py
+      0 kept, 0 discarded, 8s
+[15/20] orders-api/app/config.py
+      0 kept, 0 discarded, 114s
+[16/20] orders-api/app/db.py
+      0 kept, 0 discarded, 7s
+[17/20] orders-api/run.py
+      0 kept, 0 discarded, 2s
+[18/20] storefront/Dockerfile
+      0 kept, 0 discarded, 4s
+[19/20] storefront/src/lib/store.js
+      0 kept, 0 discarded, 3s
+[20/20] storefront/src/middleware/auth.js
+      0 kept, 1 discarded, 12s
+details: runs/eval/data_cache_ornith-9b-mlx-4bit-judge-walkthrough-tuned-20261003-094846.json
+{
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "backend": "mlx",
+  "adapter": "data/finetune/adapter-600",
+  "mode": "judge",
+  "prompt": "walkthrough",
+  "think": "off",
+  "temperature": 0.0,
+  "planted_instructions": false,
+  "strip_comments": false,
+  "trust_boundary": true,
+  "twin_scanned": true,
+  "repeats": 1,
+  "recall": 0.059,
+  "precision": 0.333,
+  "decoys_flagged": 2.0,
+  "unlisted": 0.0,
+  "patched_still_flagged": 0.0,
+  "pair_accuracy": 0.059,
+  "discarded_bad_citation": 1.0,
+  "seconds_per_scan": 142.8,
+  "recall_per_run": [
+    0.059
+  ]
+}

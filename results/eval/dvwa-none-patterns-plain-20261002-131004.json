@@ -1,0 +1,365 @@
+{
+  "summary": {
+    "target": "dvwa",
+    "model": "none",
+    "mode": "patterns",
+    "prompt": "plain",
+    "temperature": 0.0,
+    "repeats": 1,
+    "modules": 10,
+    "detected": 1.0,
+    "secure_flagged": 2.0,
+    "pair_accuracy": 0.0,
+    "other_findings_vulnerable": 3.0,
+    "other_findings_secure": 3.0,
+    "seconds_per_scan": 0.0,
+    "detected_per_run": [
+      1
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "detected": [
+        "exec"
+      ],
+      "missed": [
+        "brute",
+        "csrf",
+        "open_redirect",
+        "sqli",
+        "sqli_blind",
+        "upload",
+        "weak_id",
+        "xss_r",
+        "xss_s"
+      ],
+      "secure_flagged": [
+        "brute",
+        "exec"
+      ],
+      "pair_correct": [],
+      "other_findings_vulnerable": 3,
+      "other_findings_secure": 3,
+      "stats_vulnerable": {
+        "leads": 9,
+        "findings": 5,
+        "discarded_bad_citation": 0,
+        "seconds": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "errors": []
+      },
+      "stats_secure": {
+        "leads": 9,
+        "findings": 6,
+        "discarded_bad_citation": 0,
+        "seconds": 0.0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "errors": []
+      },
+      "findings_vulnerable": [
+        {
+          "id": "F001",
+          "title": "weak cryptography",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "pattern match for weak cryptography",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 12,
+              "end_line": 12,
+              "quote": "\t\t$pass_new = md5( $pass_new );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "hardcoded secret",
+          "cwe": "CWE-798",
+          "severity": "medium",
+          "summary": "pattern match for hardcoded secret",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "\t\t$insert = \"UPDATE `users` SET password = '$pass_new' WHERE user = '\" . $current_user . \"';\";",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "weak cryptography",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "pattern match for weak cryptography",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 9,
+              "end_line": 9,
+              "quote": "\t$pass = md5( $pass );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "command injection",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "pattern match for command injection",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 10,
+              "end_line": 10,
+              "quote": "\t\t$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "command injection",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "pattern match for command injection",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 14,
+              "end_line": 14,
+              "quote": "\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ],
+      "findings_secure": [
+        {
+          "id": "F001",
+          "title": "weak cryptography",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "pattern match for weak cryptography",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 16,
+              "end_line": 16,
+              "quote": "\t$pass = md5( $pass );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F002",
+          "title": "sql injection",
+          "cwe": "CWE-89",
+          "severity": "medium",
+          "summary": "pattern match for sql injection",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "brute/handler.php",
+              "start_line": 88,
+              "end_line": 88,
+              "quote": "\t\t$data = $db->prepare( 'UPDATE users SET failed_login = (failed_login + 1) WHERE user = (:user) LIMIT 1;' );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F003",
+          "title": "weak cryptography",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "pattern match for weak cryptography",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 15,
+              "end_line": 15,
+              "quote": "\t$pass_curr = md5( $pass_curr );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F004",
+          "title": "weak cryptography",
+          "cwe": "CWE-327",
+          "severity": "medium",
+          "summary": "pattern match for weak cryptography",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "csrf/handler.php",
+              "start_line": 29,
+              "end_line": 29,
+              "quote": "\t\t$pass_new = md5( $pass_new );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F005",
+          "title": "command injection",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "pattern match for command injection",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 22,
+              "end_line": 22,
+              "quote": "\t\t\t$cmd = shell_exec( 'ping  ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        },
+        {
+          "id": "F006",
+          "title": "command injection",
+          "cwe": "CWE-78",
+          "severity": "medium",
+          "summary": "pattern match for command injection",
+          "reasoning": "",
+          "remediation": "",
+          "evidence": [
+            {
+              "path": "exec/handler.php",
+              "start_line": 26,
+              "end_line": 26,
+              "quote": "\t\t\t$cmd = shell_exec( 'ping  -c 4 ' . $target );",
+              "role": "sink"
+            }
+          ],
+          "origin": "patterns",
+          "tier": "suspected",
+          "checks": [
+            {
+              "name": "dataflow",
+              "passed": false,
+              "detail": "cites only one end of the flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

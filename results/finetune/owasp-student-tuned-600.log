@@ -1,0 +1,140 @@
+[1/125] BenchmarkTest00010 pathtraver real=False flagged=False 
+[2/125] BenchmarkTest00071 trustbound real=False flagged=True 
+[3/125] BenchmarkTest00074 codeinj real=True flagged=True 
+[4/125] BenchmarkTest00077 ldapi real=False flagged=True 
+[5/125] BenchmarkTest00079 deserialization real=False flagged=False 
+[6/125] BenchmarkTest00087 pathtraver real=True flagged=False 
+[7/125] BenchmarkTest00117 weakrand real=True flagged=False model did not return valid JSON
+[8/125] BenchmarkTest00127 weakrand real=False flagged=False 
+[9/125] BenchmarkTest00146 hash real=False flagged=False 
+[10/125] BenchmarkTest00154 trustbound real=False flagged=False 
+[11/125] BenchmarkTest00161 codeinj real=True flagged=False 
+[12/125] BenchmarkTest00162 codeinj real=False flagged=False 
+[13/125] BenchmarkTest00166 cmdi real=True flagged=True 
+[14/125] BenchmarkTest00167 cmdi real=True flagged=True 
+[15/125] BenchmarkTest00192 sqli real=False flagged=False 
+[16/125] BenchmarkTest00212 xpathi real=True flagged=False 
+[17/125] BenchmarkTest00226 weakrand real=True flagged=True 
+[18/125] BenchmarkTest00240 weakrand real=False flagged=False model did not return valid JSON
+[19/125] BenchmarkTest00261 trustbound real=False flagged=True 
+[20/125] BenchmarkTest00262 trustbound real=False flagged=False 
+[21/125] BenchmarkTest00265 ldapi real=True flagged=False model did not return valid JSON
+[22/125] BenchmarkTest00267 cmdi real=True flagged=True 
+[23/125] BenchmarkTest00342 codeinj real=True flagged=True 
+[24/125] BenchmarkTest00346 codeinj real=False flagged=True 
+[25/125] BenchmarkTest00352 pathtraver real=False flagged=False 
+[26/125] BenchmarkTest00355 pathtraver real=False flagged=False 
+[27/125] BenchmarkTest00356 pathtraver real=False flagged=True 
+[28/125] BenchmarkTest00417 redirect real=False flagged=True 
+[29/125] BenchmarkTest00421 trustbound real=False flagged=False 
+[30/125] BenchmarkTest00424 codeinj real=False flagged=False model did not return valid JSON
+[31/125] BenchmarkTest00430 ldapi real=True flagged=True 
+[32/125] BenchmarkTest00431 cmdi real=True flagged=True 
+[33/125] BenchmarkTest00433 deserialization real=True flagged=True 
+[34/125] BenchmarkTest00435 deserialization real=False flagged=True 
+[35/125] BenchmarkTest00445 pathtraver real=True flagged=False model did not return valid JSON
+[36/125] BenchmarkTest00450 xss real=True flagged=False 
+[37/125] BenchmarkTest00452 xss real=False flagged=False 
+[38/125] BenchmarkTest00453 xss real=True flagged=True 
+[39/125] BenchmarkTest00455 sqli real=True flagged=False 
+[40/125] BenchmarkTest00459 xxe real=False flagged=False 
+[41/125] BenchmarkTest00492 hash real=False flagged=False 
+[42/125] BenchmarkTest00501 trustbound real=True flagged=True 
+[43/125] BenchmarkTest00510 deserialization real=True flagged=True 
+[44/125] BenchmarkTest00515 xss real=True flagged=True 
+[45/125] BenchmarkTest00516 pathtraver real=True flagged=False 
+[46/125] BenchmarkTest00533 xss real=True flagged=True 
+[47/125] BenchmarkTest00536 xpathi real=True flagged=True 
+[48/125] BenchmarkTest00538 xxe real=False flagged=False model did not return valid JSON
+[49/125] BenchmarkTest00541 xxe real=True flagged=True 
+[50/125] BenchmarkTest00554 xpathi real=True flagged=True 
+[51/125] BenchmarkTest00560 weakrand real=True flagged=True 
+[52/125] BenchmarkTest00573 weakrand real=False flagged=False 
+[53/125] BenchmarkTest00592 securecookie real=True flagged=True 
+[54/125] BenchmarkTest00596 redirect real=True flagged=True 
+[55/125] BenchmarkTest00598 redirect real=False flagged=False 
+[56/125] BenchmarkTest00611 pathtraver real=False flagged=True 
+[57/125] BenchmarkTest00641 hash real=True flagged=True 
+[58/125] BenchmarkTest00642 hash real=True flagged=True 
+[59/125] BenchmarkTest00653 securecookie real=False flagged=False 
+[60/125] BenchmarkTest00655 redirect real=True flagged=True 
+[61/125] BenchmarkTest00656 trustbound real=True flagged=True 
+[62/125] BenchmarkTest00657 deserialization real=True flagged=True 
+[63/125] BenchmarkTest00671 xss real=False flagged=True 
+[64/125] BenchmarkTest00687 xpathi real=False flagged=False 
+[65/125] BenchmarkTest00708 hash real=True flagged=False 
+[66/125] BenchmarkTest00710 hash real=False flagged=False model did not return valid JSON
+[67/125] BenchmarkTest00718 securecookie real=True flagged=True 
+[68/125] BenchmarkTest00720 securecookie real=True flagged=True 
+[69/125] BenchmarkTest00721 securecookie real=False flagged=False model did not return valid JSON
+[70/125] BenchmarkTest00722 redirect real=False flagged=True 
+[71/125] BenchmarkTest00723 redirect real=False flagged=False model did not return valid JSON
+[72/125] BenchmarkTest00725 trustbound real=True flagged=False 
+[73/125] BenchmarkTest00729 codeinj real=True flagged=True 
+[74/125] BenchmarkTest00731 ldapi real=True flagged=True 
+[75/125] BenchmarkTest00732 ldapi real=False flagged=False 
+[76/125] BenchmarkTest00733 ldapi real=True flagged=True 
+[77/125] BenchmarkTest00751 pathtraver real=True flagged=True 
+[78/125] BenchmarkTest00755 sqli real=False flagged=False 
+[79/125] BenchmarkTest00760 xpathi real=True flagged=True 
+[80/125] BenchmarkTest00764 xpathi real=False flagged=False model did not return valid JSON
+[81/125] BenchmarkTest00796 hash real=True flagged=True 
+[82/125] BenchmarkTest00811 securecookie real=False flagged=True 
+[83/125] BenchmarkTest00812 securecookie real=False flagged=False 
+[84/125] BenchmarkTest00813 securecookie real=False flagged=False 
+[85/125] BenchmarkTest00814 redirect real=True flagged=True 
+[86/125] BenchmarkTest00818 codeinj real=False flagged=False 
+[87/125] BenchmarkTest00819 codeinj real=True flagged=True 
+[88/125] BenchmarkTest00850 xxe real=False flagged=False 
+[89/125] BenchmarkTest00871 weakrand real=False flagged=False 
+[90/125] BenchmarkTest00876 hash real=False flagged=False 
+[91/125] BenchmarkTest00883 xss real=False flagged=False 
+[92/125] BenchmarkTest00885 securecookie real=True flagged=False 
+[93/125] BenchmarkTest00887 trustbound real=True flagged=False 
+[94/125] BenchmarkTest00888 trustbound real=True flagged=False 
+[95/125] BenchmarkTest00896 ldapi real=True flagged=False 
+[96/125] BenchmarkTest00898 deserialization real=True flagged=False 
+[97/125] BenchmarkTest00903 deserialization real=False flagged=False 
+[98/125] BenchmarkTest00907 pathtraver real=True flagged=False model did not return valid JSON
+[99/125] BenchmarkTest00924 xss real=True flagged=True 
+[100/125] BenchmarkTest00929 xpathi real=False flagged=False 
+[101/125] BenchmarkTest00941 xpathi real=False flagged=False model did not return valid JSON
+[102/125] BenchmarkTest00973 hash real=True flagged=True 
+[103/125] BenchmarkTest00981 securecookie real=True flagged=False 
+[104/125] BenchmarkTest00982 redirect real=True flagged=True 
+[105/125] BenchmarkTest00989 codeinj real=False flagged=True 
+[106/125] BenchmarkTest00990 ldapi real=False flagged=False 
+[107/125] BenchmarkTest00994 deserialization real=True flagged=True 
+[108/125] BenchmarkTest00995 deserialization real=False flagged=False 
+[109/125] BenchmarkTest01003 xss real=False flagged=False 
+[110/125] BenchmarkTest01024 xxe real=False flagged=False 
+[111/125] BenchmarkTest01028 xpathi real=False flagged=False 
+[112/125] BenchmarkTest01050 weakrand real=True flagged=False 
+[113/125] BenchmarkTest01075 hash real=False flagged=False 
+[114/125] BenchmarkTest01098 cmdi real=False flagged=True 
+[115/125] BenchmarkTest01126 weakrand real=True flagged=False 
+[116/125] BenchmarkTest01140 weakrand real=False flagged=False 
+[117/125] BenchmarkTest01159 redirect real=False flagged=False 
+[118/125] BenchmarkTest01169 ldapi real=False flagged=False 
+[119/125] BenchmarkTest01173 cmdi real=False flagged=False 
+[120/125] BenchmarkTest01203 sqli real=False flagged=False 
+[121/125] BenchmarkTest01211 xxe real=False flagged=False model did not return valid JSON
+[122/125] BenchmarkTest01212 xxe real=True flagged=True 
+[123/125] BenchmarkTest01218 xpathi real=True flagged=True 
+[124/125] BenchmarkTest01224 xss real=False flagged=False 
+[125/125] BenchmarkTest01230 deserialization real=False flagged=False 
+{
+  "label": "student-tuned-600",
+  "backend": "mlx",
+  "model": "data/cache/ornith-9b-mlx-4bit",
+  "adapter": "data/finetune/adapter-600",
+  "real": 61,
+  "fake": 64,
+  "true_positives": 41,
+  "false_positives": 13,
+  "tpr": 0.672,
+  "fpr": 0.203,
+  "score": 0.469,
+  "errors": 13,
+  "minutes": 26.5
+}
