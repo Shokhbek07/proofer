@@ -65,6 +65,29 @@ uv run proofer eval-pairs --model gemma4:26b-a4b-it-qat --prompt walkthrough
 
 Baselines that need no model: `--mode patterns` and `--mode semgrep` work with both commands.
 
+## Fine-tuning experiment
+
+E11 in `docs/EXPERIMENTS.md` tunes a 9B model on reviews written by the 26B one; the tuned model is not used (D15).
+It needs Apple silicon, the optional `finetune` dependency group, OWASP Benchmark for Python, and about seven hours.
+
+```bash
+scripts/fetch_owasp_python.sh
+```
+
+```bash
+uv run --group finetune python -c "from huggingface_hub import snapshot_download; snapshot_download('ornith-ai/Ornith-1.5-9B-MLX-4bit', revision='a48173b246ac705be75c05bedf1a0666db522d53', local_dir='data/cache/ornith-9b-mlx-4bit')"
+```
+
+```bash
+uv run --group finetune python experiments/finetune/build_dataset.py
+```
+
+```bash
+sh experiments/finetune/run.sh
+```
+
+Run nothing else that loads a large model while it trains or scores: on 24 GB, two at once exhausted memory and crashed the machine.
+
 ## Boundaries
 
 Only run this against code you own or intentionally vulnerable local labs.

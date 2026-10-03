@@ -103,6 +103,15 @@ Reason: a static planted note cost at most one finding, and stripping comments g
 The protection that does not depend on the model is structural: read-only tools, no execution, no network, a local-only model endpoint, and path confinement.
 Not claimed: robustness to adaptive attacks that iterate on the planted text.
 
+### D15 - The fine-tuned small model is not used (2026-10-03)
+
+This closes D8.
+The tuned Ornith-1.5-9B met the pre-registered criterion at neither checkpoint (E11b).
+It became better than its own teacher on held-out cases of the benchmark it was trained on, and found 5 and 1 of the 17 seeded weaknesses against 13 untuned.
+A reviewer that is excellent on one benchmark's templates and blind elsewhere is worse than no change, so the product keeps Gemma 4 26B (D12) and no adapter ships.
+The training code and scripts stay in `experiments/finetune/` as the record of the experiment.
+What would justify another attempt: varied training code with secure twins, and checkpoint selection on code unlike the training set.
+
 ## Open
 
 - O2: Retrieval over public security knowledge. Evidence says it does not raise detection accuracy on open models. Proposed use: explanations and fixes only, plus one small ablation to check the claim on our benchmark.

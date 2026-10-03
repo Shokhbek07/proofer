@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 
@@ -30,6 +31,16 @@ def same_place(finding: Finding, others: list[Finding], slack: int = 3) -> bool:
     )
 
 
+def scanner_env() -> dict[str, str]:
+    """The environment minus empty certificate paths, which make Semgrep abort.
+
+    A shell profile line such as `export SSL_CERT_FILE=$(python3 -m certifi)`
+    leaves the variable empty when that Python lacks certifi.
+    """
+    return {k: v for k, v in os.environ.items()
+            if v or k not in ("SSL_CERT_FILE", "SSL_CERT_DIR")}
+
+
 def semgrep_findings(ws: Workspace, config: str = "p/default") -> list[Finding]:
     """Run Semgrep's community rules and convert the results to findings.
 
@@ -41,7 +52,7 @@ def semgrep_findings(ws: Workspace, config: str = "p/default") -> list[Finding]:
     proc = subprocess.run(
         ["semgrep", "scan", "--config", config, "--metrics", "off", "--json", "--quiet",
          str(ws.root)],
-        capture_output=True, text=True, timeout=900, check=False,
+        capture_output=True, text=True, timeout=900, check=False, env=scanner_env(),
     )
     try:
         results = json.loads(proc.stdout)["results"]

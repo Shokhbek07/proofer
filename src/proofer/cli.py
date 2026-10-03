@@ -23,7 +23,7 @@ from .bench import (
 from .external import ScannerError
 from .judge import VARIANTS
 from .leads import find_leads
-from .llm import LLMError, OllamaClient
+from .llm import ChatClient, LLMError, OllamaClient
 from .pipeline import MODES, scan
 from .report import to_markdown
 from .workspace import Workspace, WorkspaceError
@@ -33,9 +33,14 @@ def _progress(message: str) -> None:
     print(message, file=sys.stderr, flush=True)
 
 
-def _client(args: argparse.Namespace, seed: int = 7) -> OllamaClient | None:
+def _client(args: argparse.Namespace, seed: int = 7) -> ChatClient | None:
     if args.mode in ("patterns", "semgrep"):
         return None
+    if args.backend == "mlx":
+        from .llm_mlx import MLXClient  # optional dependency, Apple silicon only
+
+        return MLXClient(args.model, args.adapter, max_tokens=args.max_tokens,
+                         temperature=args.temperature)
     think = {"on": True, "off": False}.get(args.think)
     return OllamaClient(args.model, host=args.host, num_ctx=args.num_ctx, think=think,
                         seed=seed, temperature=args.temperature, max_tokens=args.max_tokens)
@@ -120,6 +125,8 @@ def _cmd_eval(args: argparse.Namespace) -> int:
 
     summary = {
         "model": args.model,
+        "backend": args.backend,
+        "adapter": args.adapter,
         "mode": args.mode,
         "prompt": args.prompt,
         "think": args.think,
@@ -141,7 +148,7 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     }
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    name = f"{args.model.replace('/', '_').replace(':', '_')}-{args.mode}-{args.prompt}-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    name = f"{args.model.replace('/', '_').replace(':', '_')}-{args.mode}-{args.prompt}{'-tuned' if args.adapter else ''}-{time.strftime('%Y%m%d-%H%M%S')}.json"
     (out_dir / name).write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
     print(json.dumps(summary, indent=2))
     print(f"details: {out_dir / name}", file=sys.stderr)
@@ -186,6 +193,8 @@ def _cmd_eval_pairs(args: argparse.Namespace) -> int:
     summary = {
         "target": truth.target,
         "model": args.model,
+        "backend": args.backend,
+        "adapter": args.adapter,
         "mode": args.mode,
         "prompt": args.prompt,
         "temperature": args.temperature,
@@ -201,7 +210,7 @@ def _cmd_eval_pairs(args: argparse.Namespace) -> int:
     }
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    name = f"{truth.target}-{args.model.replace('/', '_').replace(':', '_')}-{args.mode}-{args.prompt}-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    name = f"{truth.target}-{args.model.replace('/', '_').replace(':', '_')}-{args.mode}-{args.prompt}{'-tuned' if args.adapter else ''}-{time.strftime('%Y%m%d-%H%M%S')}.json"
     (out_dir / name).write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
     print(json.dumps(summary, indent=2))
     print(f"details: {out_dir / name}", file=sys.stderr)
@@ -215,6 +224,9 @@ def main(argv: list[str] | None = None) -> int:
     def model_options(p: argparse.ArgumentParser) -> None:
         p.add_argument("--model", default="none", help="Model name in the local runtime.")
         p.add_argument("--temperature", type=float, default=0.0)
+        p.add_argument("--backend", choices=["ollama", "mlx"], default="ollama",
+                       help="mlx loads a local MLX model in process, without schema enforcement.")
+        p.add_argument("--adapter", default=None, help="LoRA adapter directory, mlx backend only.")
         p.add_argument("--host", default="http://127.0.0.1:11434")
         p.add_argument("--num-ctx", type=int, default=16384)
         p.add_argument("--think", choices=["default", "on", "off"], default="off")

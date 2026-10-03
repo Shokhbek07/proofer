@@ -295,3 +295,171 @@ Learned:
 - A static planted note is a weak attack on this configuration, and its effect lands on the least anchored findings.
 - Neither defence earned its place on this evidence. Comments stay visible by default, `--strip-comments` remains as an option, and no claim of robustness to adaptive attacks is made (D14).
 - What does hold structurally, independent of the model: the agent has no tools that write, execute or reach the network, the model endpoint must be local, and repository paths cannot escape the root. A hijacked review can at worst report wrongly; it cannot act.
+
+## E11 - Fine-tuning a small model from the large one's reviews (2026-10-03)
+
+This section was written before any result existed.
+
+**Question.** Gemma 4 26B gives the best reviews but takes about four minutes per scan.
+Ornith-1.5-9B is fast and scored 7 of 17 (E3).
+Can the small model be taught to review like the large one, and does what it learns carry over to code that looks nothing like its training data?
+
+**Why this design and not a public vulnerability dataset.** The public datasets are function-level C and C++ with label accuracy between 25 and 60 percent (see `docs/research/prior-art.md`).
+Our task is file-level review of web code with a structured answer.
+So the training data is built for the task: a labelled benchmark supplies the truth, and the large model supplies the written review.
+
+**Data.** OWASP Benchmark for Python, 1,230 small Flask handlers in 14 weakness classes, each labelled as a real weakness or a safe look-alike.
+Licence headers and the category names embedded in URL paths are stripped, because they would tell the model which class to look for.
+Split by class and label: 335 cases for training and 125 held out.
+No case is in both.
+
+**Teacher.** For each training case, Gemma 4 26B gets the normal review prompt plus a private line stating the answer key, and writes the analysis and findings.
+The answer is kept only if it is consistent with the key and, for real weaknesses, its quoted lines verify against the file.
+Findings outside the labelled class are dropped, and safe cases always get an empty findings list.
+The student is trained on the normal prompt, without the answer-key line.
+
+**Student.** Ornith-1.5-9B, 4-bit, tuned with LoRA through `mlx-lm` on this laptop.
+
+**Measurements.** Untuned student against tuned student, same prompts, same runtime:
+
+1. Held-out OWASP cases: true-positive rate, false-positive rate, and their difference (the benchmark's own score).
+2. The seeded bakery benchmark: recall, precision, pair accuracy.
+3. DVWA pairs: detected, secure versions flagged, pair accuracy.
+
+Gemma 4 26B is scored on the held-out OWASP cases too, with the normal prompt, as the reference.
+
+**What I expect.** A large gain on the held-out OWASP cases, because they share templates with the training cases.
+Little or no gain on the bakery benchmark and DVWA, because published work finds tuned detectors learn surface patterns.
+A real risk of harm on those two: the student may learn to report only the 14 OWASP classes and stop reporting things like missing ownership checks or privileged containers, which the training data never contains.
+
+**What would count as success.** The tuned student beats the untuned one on bakery pair accuracy and DVWA pair accuracy, not just on OWASP.
+Anything else is a negative or mixed result and will be reported as such.
+
+**Known weaknesses of the design, stated in advance.**
+
+- The student runs through MLX without schema-constrained decoding, unlike every earlier number, which came through Ollama.
+  Tuned and untuned student are compared in the same setup, but neither is directly comparable with the E3 figure for this model.
+- The teacher sees the answer key when writing training reviews, so its explanations for cases it would have got wrong are rationalisations.
+  Quotes are still checked; reasoning is not.
+- One prompt changed slightly since E7: files that import a local module by absolute path now get that module's definitions as context.
+  On the bakery benchmark this affects one file.
+- One training run, one seed.
+
+### E11a - Training would not fit, and why (2026-10-03, written before any score existed)
+
+Standard LoRA training through `mlx_lm.lora` failed on the first step with a Metal out-of-memory error.
+It failed with 16, 8 and 2 adapted layers, at 4,096, 2,304 and 768 tokens, with gradient checkpointing, inside and outside the sandbox, with 85 percent of system memory free.
+Inference with the same model used about 6 GB, so the failure was not a plain shortage.
+
+Cause, found by measuring the backward pass directly at increasing lengths:
+
+- The student has the Qwen 3.5 architecture: of its 32 layers, 24 are recurrent "gated delta" layers and every fourth is ordinary attention.
+- At inference the recurrence runs in a custom Metal kernel that has no gradient.
+- In training mode `mlx-lm` replaces it with a token-by-token loop that can be differentiated, and the backward pass keeps a 2 MB state per token per layer.
+- Measured: adapting only the last layer (attention) costs nothing extra; adapting the last two (one recurrent) costs 9.9 GB at 512 tokens against 6.4 GB, about 7 MB per token per recurrent layer.
+- The training examples run to 3,672 tokens, so even one recurrent layer in the gradient path needs about 25 GB, and the planned 16 layers about 300 GB.
+
+What was done instead (`experiments/finetune/train_lora.py`):
+
+- The recurrence stays on the inference kernel and its output is treated as a constant in the backward pass.
+- Gradients still reach the adapters through the residual stream, the MLPs, the attention layers, and the gate and output projection of each recurrent layer.
+- Nothing flows through the recurrence itself, so adapters on its query, key, value and gate inputs get no update.
+- This is a truncated gradient, not the exact one, and the tuned model below is the product of that approximation.
+- With that change the backward pass still peaked at 18.9 GB for 8 adapted layers and 26.2 GB for 16 at 3,700 tokens, and the first full run with 16 layers ran out of memory on step one.
+- With gradient checkpointing on top, the peak is 11.1 GB for 8 layers and 11.4 GB for 16 at 3,700 tokens, which fits.
+
+Run settings: 16 layers, gradient checkpointing, rank 8, learning rate 1e-4, batch 1, 900 steps (about 3 passes over 294 examples), loss on the answer only, seed 7.
+The student's answer budget in MLX was raised from 1,500 to 4,096 tokens to match the Ollama path, after 1 of 4 untuned trial answers ran out at 1,500.
+
+What this changes in the survey: `docs/research/models.md` says LoRA is practical up to about 8B on this machine.
+That holds for plain transformer models; for this hybrid family the limit is set by sequence length, not parameter count.
+
+### E11b - Results (2026-10-03)
+
+Training took about 3 hours on this laptop (900 steps, about 12 seconds each).
+Validation loss: 0.827 before training, 0.524 at step 150, 0.410 at 300, 0.401 at 450, 0.399 at 600, 0.417 at 750, 0.536 at 900.
+Training loss dropped at each pass over the 294 examples: about 0.45 late in the first pass, 0.25 in the second, 0.15 in the third.
+The gap to validation loss says the third pass mostly memorised the training answers.
+
+The pre-registered model is the final adapter (step 900).
+Because validation loss was lowest at step 600 and clearly rising at 900, the step-600 checkpoint was scored too.
+That choice used validation loss only, but it was made after the step-900 held-out OWASP score had been seen, so it is a secondary result.
+
+**Held-out OWASP cases** (125: 61 real, 64 safe look-alikes).
+An unusable answer (invalid JSON, out of budget, or aborted by the runtime) counts as not flagged.
+
+| Model | TPR | FPR | Score | Unusable answers | Minutes |
+|---|---|---|---|---|---|
+| Teacher, Gemma 4 26B, Ollama, normal prompt | 0.639 | 0.422 | 0.217 | 1 | 31.7 |
+| Student, untuned | 0.279 | 0.219 | 0.060 | 45 | 58.1 |
+| Student, tuned, step 900 (pre-registered) | 0.361 | 0.109 | 0.251 | 10 | 26.0 |
+| Student, tuned, step 600 (lowest validation loss) | 0.672 | 0.203 | 0.469 | 13 | 26.5 |
+
+On answered cases only, the scores are 0.211 (teacher, 124 answered), 0.114 (untuned, 80), 0.274 (step 900, 115) and 0.483 (step 600, 112).
+
+**Seeded bakery benchmark** (17 weaknesses, 12 decoys, patched twin; 20 files; one run each).
+
+| Student | Found | Recall | Precision | Decoys flagged | Still flagged in twin | Pair accuracy | Unusable answers (vulnerable, twin) | Seconds per scan |
+|---|---|---|---|---|---|---|---|---|
+| Untuned | 13 | 0.765 | 0.650 | 4 | 9 | 0.294 | 3, 3 | 403 |
+| Tuned, step 900 | 5 | 0.294 | 0.833 | 0 | 0 | 0.294 | 7, 4 | 218 |
+| Tuned, step 600 | 1 | 0.059 | 0.333 | 2 | 0 | 0.059 | 2, 3 | 143 |
+
+**DVWA pairs** (10 modules, one run each).
+
+| Student | Detected | Secure flagged | Pair accuracy | Unusable answers (vulnerable, secure) | Seconds per scan |
+|---|---|---|---|---|---|
+| Untuned | 2 (brute, sqli) | 2 | 0.1 | 4, 3 | 178 |
+| Tuned, step 900 | 1 (exec) | 1 | 0.0 | 4, 0 | 219 |
+| Tuned, step 600 | 2 (exec, sqli_blind) | 0 | 0.2 | 2, 0 | 94 |
+
+**Against the pre-registered criterion: not met.**
+The step-900 student ties the untuned one on bakery pair accuracy (0.294) and is worse on DVWA (0.0 against 0.1).
+The step-600 student is much worse on bakery (0.059) and better on DVWA (0.2), a difference of one module, which is within run-to-run noise.
+
+What happened:
+
+- In distribution, tuning worked better than expected.
+  The step-600 student beats its own teacher on the held-out OWASP cases, 0.469 against 0.217.
+  The teacher, unaided, flags 42 percent of the safe look-alikes; the student was trained only on answers filtered by the answer key, so it learned the benchmark's notion of safe, which the teacher does not have on its own.
+- Part of the gain is answer format.
+  Without schema enforcement the untuned student gave unusable output on 45 of 125 cases; the tuned ones on 10 and 13.
+  On answered cases alone the step-900 gain shrinks (0.114 to 0.274), while step 600 stays far ahead (0.483).
+- Out of distribution, tuning did harm, as predicted, and more broadly than predicted.
+  The expected loss was the classes the training data never contains, such as ownership checks and containers.
+  The step-900 student also lost SQL injection (V01), path traversal (V04) and weak password hashing (V08), all three inside its training classes.
+  On the bakery code it reported only three weakness families: command injection, cross-site scripting, and "trust boundary violation" (CWE-501), an OWASP-specific class it applied three times.
+  The step-600 student found 1 of 17.
+- The tuned students' better bakery precision and clean twins come from reporting almost nothing: 6 and 3 findings in the vulnerable tree, against 23 untuned.
+- Validation loss did not predict transfer.
+  The checkpoint with the lowest validation loss was the best on OWASP and the worst on bakery.
+- Tuned answers are shorter, so scans were faster (403 seconds to 218 and 143 on bakery), which does not make up for the lost recall.
+- The untuned student through MLX with the analysis-first prompt found 13 of 17, but still flagged 9 of the 13 fixed weaknesses in the patched twin.
+  It reports a lot and cannot tell fixed code from broken code, which is the job the large model does well (pair accuracy 0.71 to 0.88 across E5 to E7).
+
+Caveats:
+
+- One training run, one seed, one evaluation run per configuration.
+  On DVWA a difference of one module is noise.
+- The gradient was truncated (E11a). A full-gradient run might transfer differently; it cannot be run on this laptop.
+- The step-600 result was chosen after the step-900 OWASP score was seen.
+- All 335 training cases come from one benchmark written in one template style.
+  More varied training code might transfer better; this was not tested.
+- Semgrep failed in the runs started from the Terminal panel, because the shell profile set `SSL_CERT_FILE` to an empty string (now handled in `external.py`).
+  That affects only the `supported` tier, which none of these scores use.
+- Between runs the laptop had a kernel panic in the GPU driver while memory was exhausted: the teacher was still loaded in Ollama, an unrelated 12 GB `llama-server` was running, and a new 5 GB model process had just started.
+  No result file was lost, and the interrupted stages were rerun from the start.
+  The run scripts now check for free memory before each stage and unload the teacher when its stage ends.
+- The teacher stage first stopped at case 88 when Ollama aborted one looping answer ("token repeat limit reached") and the error ended the run.
+  A per-request runtime failure is now an error for that file only, in the product as well as here, and the teacher stage was rerun in full.
+
+Learned:
+
+- Distilling a large reviewer into a small one with labels filtered by a benchmark's answer key makes the small model very good at that benchmark and worse at reviewing anything else.
+  A held-out split of the same benchmark is not evidence of a better reviewer.
+- The default stays Gemma 4 26B (D12); the tuned student is not shipped (D15).
+- The teacher's own false-positive rate on look-alike code, 42 percent, is a warning about the default model on templated code that the bakery and DVWA numbers do not show.
+- To try again: train on varied code (several benchmarks and real projects, with secure twins), keep the answer format through constrained decoding instead of teaching it, and choose checkpoints on an out-of-distribution validation set.
+
+Reproduce: `experiments/finetune/build_dataset.py`, then `experiments/finetune/run.sh` and `experiments/finetune/run_extra.sh`.
+Raw results are in `runs/finetune/` and `runs/eval/`.

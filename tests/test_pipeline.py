@@ -2,6 +2,7 @@
 
 import json
 
+from proofer.external import scanner_env
 from proofer.findings import Evidence, Finding, Tier
 from proofer.llm import ChatResult
 from proofer.pipeline import _assign_tiers, scan
@@ -77,3 +78,11 @@ def test_hedged_findings_are_listed_last_within_a_tier():
     findings = [at(1, "This might be reachable"), at(2, "User input reaches the query")]
     _assign_tiers(findings, scanner=None)
     assert [f.id for f in sort_findings(findings)] == ["F002", "F001"]
+
+
+def test_empty_certificate_path_is_not_passed_to_the_scanner(monkeypatch):
+    monkeypatch.setenv("SSL_CERT_FILE", "")
+    monkeypatch.setenv("SSL_CERT_DIR", "/etc/ssl/certs")
+    env = scanner_env()
+    assert "SSL_CERT_FILE" not in env
+    assert env["SSL_CERT_DIR"] == "/etc/ssl/certs"

@@ -31,9 +31,11 @@ Tags and repository ids marked `[pulled]` were confirmed by downloading them on 
 ## Fine-tuning feasibility on this machine
 
 - LoRA is practical up to about 8B, QLoRA up to about 14B; 27B is not.
+- Measured later (E11a): that estimate holds for plain transformer models only.
+  The Qwen 3.5 family has recurrent layers whose training path in `mlx-lm` costs about 7 MB per token per layer, so on those the limit is sequence length, not parameter count.
 - A few thousand examples would take hours per epoch.
 - Serving a tuned Qwen or Gemma model needs a fuse, convert, quantise chain.
-- See decision O3 for why this is not planned.
+- See decision D8 for the one time-boxed experiment that was run, and E11 for its result.
 
 ## Sources
 

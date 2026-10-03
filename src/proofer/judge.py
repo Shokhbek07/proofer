@@ -18,7 +18,7 @@ from .agent import wrap_untrusted
 from .evidence import check_evidence
 from .findings import Check, Evidence, Finding, Severity, Tier
 from .leads import Lead
-from .llm import ChatClient
+from .llm import ChatClient, GenerationError
 from .workspace import Workspace, WorkspaceError
 
 MAX_FILE_LINES = 400
@@ -121,7 +121,9 @@ WALKTHROUGH_INSTRUCTION = (
 VARIANTS = ("plain", "walkthrough")
 
 _IMPORT_PATTERNS = [
-    re.compile(r"^\s*from\s+\.[\w.]*\s+import\s+(.+)$"),                      # python relative
+    # Any python from-import: names that are not defined in the repository are
+    # simply not found later, so third-party imports cost nothing.
+    re.compile(r"^\s*from\s+[\w.]+\s+import\s+(.+)$"),
     re.compile(r"^\s*(?:const|let|var)\s*\{([^}]+)\}\s*=\s*require\(['\"]\."),  # commonjs
     re.compile(r"^\s*import\s*\{([^}]+)\}\s*from\s*['\"]\."),                   # es modules
 ]
@@ -138,16 +140,32 @@ class Review:
     error: str = ""
 
 
+_MODULE_IMPORT = re.compile(r"^\s*import\s+([\w.]+)\s*$")
+
+
 def imported_names(lines: list[str]) -> list[str]:
     names: list[str] = []
+
+    def add(name: str) -> None:
+        if name.isidentifier() and name not in names:
+            names.append(name)
+
+    modules: list[str] = []
     for line in lines:
         for rx in _IMPORT_PATTERNS:
             m = rx.match(line)
             if m:
                 for part in m.group(1).split(","):
-                    name = part.split(" as ")[0].strip(" ()")
-                    if name.isidentifier() and name not in names:
-                        names.append(name)
+                    add(part.split(" as ")[0].strip(" ()"))
+        m = _MODULE_IMPORT.match(line)
+        if m and "." in m.group(1) and m.group(1) not in modules:
+            modules.append(m.group(1))
+    # `import pkg.mod` followed by `pkg.mod.name(...)`: the name is what to look up.
+    for module in modules:
+        used = re.compile(rf"\b{re.escape(module)}\.([A-Za-z_]\w*)")
+        for line in lines:
+            for name in used.findall(line):
+                add(name)
     return names
 
 
@@ -231,10 +249,15 @@ def review_file(
         return review
     # The switch exists only to measure what the trust-boundary text is worth.
     system = SYSTEM_PROMPT + (TRUST_BOUNDARY if trust_boundary else "")
-    result = client.chat(
-        [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-        schema=WALKTHROUGH_SCHEMA if variant == "walkthrough" else FINDINGS_SCHEMA,
-    )
+    try:
+        result = client.chat(
+            [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+            schema=WALKTHROUGH_SCHEMA if variant == "walkthrough" else FINDINGS_SCHEMA,
+        )
+    except GenerationError as exc:
+        # One runaway answer costs this file, not the whole scan.
+        review.error = str(exc)
+        return review
     review.prompt_tokens = result.prompt_tokens
     review.completion_tokens = result.completion_tokens
     review.seconds = result.seconds

@@ -10,6 +10,7 @@ dist/
 # run outputs and downloaded data
 runs/
 data/cache/
+data/finetune/
 bench/external/
 
 # the brief is Safia's document, keep it out of a public repository

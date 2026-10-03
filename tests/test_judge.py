@@ -5,7 +5,7 @@ import json
 from proofer.findings import Evidence, Finding
 from proofer.judge import build_prompt, has_dataflow, imported_names, review_file
 from proofer.leads import find_leads
-from proofer.llm import ChatResult
+from proofer.llm import ChatResult, GenerationError
 from proofer.workspace import Workspace
 
 
@@ -106,3 +106,43 @@ def test_strip_comments_removes_planted_note_from_prompt(tmp_path):
     stripped = build_prompt(ws, lead, strip_comments=True)
     assert "AUTOMATED REVIEWERS" not in stripped
     assert "3|     return os.system(" in stripped
+
+
+def test_dotted_module_usage_is_resolved():
+    lines = [
+        "import helpers.utils",
+        "import os",
+        "x = helpers.utils.escape_for_html(v)",
+        "y = helpers.utils.RES_DIR + os.path.sep",
+        "from helpers.db import get_connection",
+    ]
+    assert imported_names(lines) == ["get_connection", "escape_for_html", "RES_DIR"]
+
+
+def test_mlx_prompt_helpers():
+    from proofer.judge import WALKTHROUGH_SCHEMA
+    from proofer.llm_mlx import extract_json, shape_of, with_format_note
+
+    shape = shape_of(WALKTHROUGH_SCHEMA)
+    assert shape.startswith('{"analysis": [string, ...], "findings": [{"title": string')
+    assert '"severity": "low|medium|high|critical"' in shape and '"start_line": int' in shape
+    assert extract_json('```json\n{"findings": []}\n```') == '{"findings": []}'
+    assert extract_json("no json here") == "no json here"
+    messages = [{"role": "user", "content": "review"}]
+    noted = with_format_note(messages, WALKTHROUGH_SCHEMA)
+    assert noted[0]["content"].startswith("review\n\nAnswer with one JSON object")
+    assert messages[0]["content"] == "review"
+
+
+class Aborting:
+    model = "aborting"
+
+    def chat(self, messages, tools=None, schema=None):
+        raise GenerationError("runtime returned 500: token repeat limit reached")
+
+
+def test_one_aborted_generation_is_an_error_for_that_file(tmp_path):
+    ws = repo(tmp_path)
+    review = review_file(Aborting(), ws, lead_for(ws, "views.py"))
+    assert review.findings == []
+    assert "repeat limit" in review.error

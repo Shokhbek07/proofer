@@ -20,6 +20,10 @@ class LLMError(Exception):
     pass
 
 
+class GenerationError(LLMError):
+    """The runtime was reachable but gave up on this one request."""
+
+
 @dataclass
 class ToolCall:
     name: str
@@ -114,6 +118,9 @@ class OllamaClient:
             resp = self._http.post(f"{self.host}/api/chat", json=body)
         except httpx.HTTPError as exc:
             raise LLMError(f"cannot reach model runtime: {exc}") from exc
+        if resp.status_code == 500:
+            # For example Ollama's "token repeat limit reached" on a looping answer.
+            raise GenerationError(f"runtime returned 500: {resp.text[:300]}")
         if resp.status_code != 200:
             raise LLMError(f"runtime returned {resp.status_code}: {resp.text[:300]}")
         data = resp.json()
