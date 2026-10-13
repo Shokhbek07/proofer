@@ -436,7 +436,7 @@ The code fix written seconds before the crash, the step-600 adapter (checksum ch
 
 **What changed.**
 
-- The experiment scripts check free memory before each stage (60 percent for an MLX stage, 75 percent before loading Gemma) and stop if it is not available (`experiments/finetune/lib.sh`).
+- The experiment scripts check free memory before each stage (60 percent for an MLX stage, 75 percent before loading Gemma) and stop if it is not available (`experiments/lib.sh`).
 - Gemma is unloaded from Ollama as soon as its stage ends.
 - The README warns against loading other large models while the experiment runs.
 - The interrupted work (the step-600 evaluation and the teacher's held-out run) was rerun from the start, 09:15 to 10:23, with nothing else loaded.

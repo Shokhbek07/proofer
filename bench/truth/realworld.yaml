@@ -1,0 +1,274 @@
+# Real security fixes from open-source web projects, scored as vulnerable and fixed pairs.
+# Nothing is vendored. Fetch the trees with scripts/fetch_realworld.py: for each item it
+# checks out the fix commit and its parent, and records the lines the fix changed.
+#
+# Why these: the bakery and DVWA are small and DVWA is old enough to be in any model's
+# training data. These weaknesses were published after the Gemma 4 release (2 April 2026),
+# in real code with real surrounding structure, so the default model cannot have seen
+# the advisory or the fix.
+#
+# Selection, made on 2026-10-03 before any model was run on these items:
+#
+# 1. Mechanical (scripts/select_realworld.py, cache in data/cache/realworld-selection):
+#    reviewed GitHub advisories, not withdrawn, published 2026-04-03 to 2026-09-30,
+#    PIP or NPM ecosystem, a CWE in the injection or missing-check sets of that script,
+#    exactly one cited GitHub fix commit with one parent, 1 to 3 non-test source files
+#    changed, at least one of them modified, at most 80 changed source lines.
+#    14,698 advisories, 881 in scope, 167 injection and 51 missing-check candidates
+#    after keeping one advisory per repository, in a random order seeded with 20261003.
+# 2. Manual, in that order, taking the first 12 of each group that pass:
+#    the project is a web application or service, a web framework or HTTP middleware,
+#    or a library whose purpose is handling web input or output (HTML sanitisers,
+#    markdown to HTML, JWT or session handling, SSRF guards). Excluded: command line
+#    tools, developer tooling, ML and data libraries, file-format parsers, browser
+#    extensions, test utilities, general utility libraries.
+# 3. Length: every reviewed file has at most 1,200 lines in the vulnerable version,
+#    so a file needs at most four review windows.
+#
+# Excluded on the way, by position in the seeded order:
+#   injection 1   GHSA-cmxg-94mg-jq94 @tmlmobilidade/utils    general utility library
+#   injection 3   GHSA-fxgq-9m89-cxj9 eml_parser              file-format parser
+#   injection 5   GHSA-wjv6-jcfj-mf9r datamodel-code-generator code generator (developer tooling)
+#   injection 6   GHSA-29h4-r29x-hchv amazon-redshift driver  database driver, not web
+#   injection 7   GHSA-6p8h-3wgx-97gf GitPython               git library, not web
+#   injection 8   GHSA-w48f-fwg7-ww6p @stablelib/cbor         file-format parser
+#   injection 11  GHSA-3hhw-38pf-pxj6 NLTK                    ML and data library
+#   injection 16  GHSA-9qhq-v63v-fv3j PraisonAI               command line tool
+#   injection 19  GHSA-322x-v876-g883 nogginlessdom           test utility
+#   injection 21  GHSA-29pf-2h5f-8g72 transformers            ML library
+#   injection 22  GHSA-mwp4-54f8-5fhr ip-address              general utility library
+#   injection 23  GHSA-2j2x-hqr9-3h42 react-router            length: router.ts has 6,031 lines
+#   missing 1     GHSA-pc2w-4mq8-32qw dynatrace-mcp           AI tool server; the check is a human-approval gate
+#   missing 3     GHSA-jxc9-xmc4-gr23 open-webui              length: knowledge.py has 2,349 lines
+#   missing 6     GHSA-g2hm-779g-vm32 openclaw                length: heartbeat-runner.ts has 1,488 lines
+#   missing 8     GHSA-vc9j-9wph-qghj mppx                    crypto payments library, not web
+#   missing 11    GHSA-vgxm-h9gx-h9w7 django-cms              length: placeholderadmin.py has 1,216 lines
+#   missing 13    GHSA-f5vj-f2hx-8m93 webpack-dev-server      developer tooling
+#   missing 14    GHSA-f5pf-q7c7-m3vv cyberdrop-dl            command line tool
+#   missing 15    GHSA-5ffh-6f9q-5hhr Unleash                 length: feature-toggle-service.ts has 2,581 lines
+#   missing 16    GHSA-hg6j-4rv6-33pg aiohttp                 length: client.py has 1,807 lines
+#
+# `files` are the fix commit's modified non-test source files, exactly as the mechanical
+# filter found them, with no file dropped by hand. Each item was read before any model
+# run: in every item at least one of them holds the weakness. Files that carry only a
+# supporting edit are named in `note`; they stay, which makes `detected` slightly easier
+# and `pair_correct` slightly harder. Only `files` are reviewed, but the whole
+# repository is present for the project map. Changed lines are counted ignoring
+# whitespace-only edits.
+#
+# `cwe` is the advisory's CWEs plus their family, so a finding is not missed over a
+# sibling label. Families: path 22 23 24 35 36 59 73; xss 79 80 83 87 116;
+# prototype 1321 915 471; ssrf 918 441; code 94 95 96 1336; validation 20 1284 1287;
+# access 284 285 639 862 863 732 269 266 425 287 288 290 306 1390, plus 200 because
+# missing authorisation shows up as disclosure; authenticity 345 346 347 352 1385.
+# CWE-200 adds no family of its own. Other advisory CWEs (369, 524, 1389) are kept
+# as they are.
+#
+# Scoring (src/proofer/realworld.py): detected = a finding of the item's class in one
+# of its files on the vulnerable side; detected_at_change = one of its quoted ranges is
+# within 3 lines of a line the fix changed; pair_correct = detected, and no finding of
+# the class in those files on the fixed side.
+
+target: realworld
+
+items:
+  - id: atomic-agents-stack
+    group: injection
+    advisory: GHSA-rm43-82j9-r4mj
+    published: 2026-08-13
+    repo: dep0we/atomic-agents-stack
+    fix: ec474f458122c5c0ca718d0df3078c8080338b2c
+    cwe: [CWE-22, CWE-23, CWE-24, CWE-35, CWE-36, CWE-59, CWE-73]
+    files: [atomic_agents/dashboard/serve.py]
+  - id: mistune
+    group: injection
+    advisory: GHSA-8c25-4j27-2rv3
+    published: 2026-07-20
+    repo: lepture/mistune
+    fix: c7101fcbb6e8790e8e39157c5ca2238fc6dd6cbc
+    cwe: [CWE-79, CWE-80, CWE-83, CWE-87, CWE-116]
+    files: [src/mistune/renderers/html.py]
+  - id: n8n-node-sqlite3
+    group: injection
+    advisory: GHSA-q7m3-rhxg-7vxr
+    published: 2026-08-27
+    repo: DangerBlack/n8n-node-sqlite3
+    fix: 145a8876ff12375813bdcd4ae4fe78f460c53a98
+    cwe: [CWE-22, CWE-23, CWE-24, CWE-35, CWE-36, CWE-59, CWE-73]
+    files: [nodes/SqliteNode/v1/SqliteV1.node.ts]
+  - id: feathers
+    group: injection
+    advisory: GHSA-28xv-ph75-77wh
+    published: 2026-07-14
+    repo: feathersjs/feathers
+    fix: 28b3c03c63bdbff53115fdaa46c56980e7942acc
+    cwe: [CWE-471, CWE-915, CWE-1321]
+    files: [packages/commons/src/index.ts]
+  - id: weblate
+    group: injection
+    advisory: GHSA-ffgh-3jrf-8wvh
+    published: 2026-04-16
+    repo: WeblateOrg/weblate
+    fix: e30dbcb33ae78e754ecef192d54f996b89cb4e15
+    cwe: [CWE-22, CWE-23, CWE-24, CWE-35, CWE-36, CWE-59, CWE-73]
+    files: [weblate/trans/discovery.py, weblate/utils/files.py, weblate/vcs/base.py]
+    note: utils/files.py gains the containment helper and fixes a related prefix check for management commands.
+  - id: hono
+    group: injection
+    advisory: GHSA-gqvv-2mrq-wpjv
+    published: 2026-09-08
+    repo: honojs/hono
+    fix: 3a67f7f3997e1437d108f7bcba2dbcee2df69221
+    cwe: [CWE-22, CWE-23, CWE-24, CWE-35, CWE-36, CWE-59, CWE-73]
+    files: [src/helper/ssg/ssg.ts, src/helper/ssg/utils.ts]
+    note: The flawed containment check is in utils.ts; ssg.ts writes the files and only gains a guard for an empty directory name.
+  - id: taipy
+    group: injection
+    advisory: GHSA-28gh-q3gw-pvx8
+    published: 2026-05-27
+    repo: Avaiga/taipy
+    fix: 129fd407ffca49ee4ab853772c88d0c873e038dd
+    cwe: [CWE-22, CWE-23, CWE-24, CWE-35, CWE-36, CWE-59, CWE-73]
+    files: [taipy/gui/extension/library.py]
+  - id: pyjwt
+    group: injection
+    advisory: GHSA-9v7f-9g4p-ffgj
+    published: 2026-09-29
+    repo: jpadilla/pyjwt
+    fix: 0a795b8e1f6ef08f634aa7086fc41cc6d5ce3e56
+    cwe: [CWE-200, CWE-345, CWE-346, CWE-347, CWE-352, CWE-441, CWE-918, CWE-1385]
+    files: [jwt/jwks_client.py]
+  - id: flowise
+    group: injection
+    advisory: GHSA-c6xh-wv4j-ppv5
+    published: 2026-08-04
+    repo: FlowiseAI/Flowise
+    fix: 0fc769208395641c1411ccdb9c81416e54802155
+    cwe: [CWE-441, CWE-918, CWE-1389]
+    files: [packages/components/src/httpSecurity.ts]
+  - id: cyberchef
+    group: injection
+    advisory: GHSA-fx6f-382r-j72c
+    published: 2026-09-24
+    repo: gchq/CyberChef
+    fix: 85db3be5d0096859b810f0e8d3e151d5dc9b948f
+    cwe: [CWE-79, CWE-80, CWE-83, CWE-87, CWE-116, CWE-471, CWE-915, CWE-1321]
+    files: [src/core/lib/Charts.mjs, src/core/lib/Protocol.mjs]
+  - id: ghost
+    group: injection
+    advisory: GHSA-cjc9-q5gf-327p
+    published: 2026-08-04
+    repo: TryGhost/Ghost
+    fix: fbaa92327e52607036a1e42204c9eadcc751d82c
+    cwe: [CWE-22, CWE-23, CWE-24, CWE-35, CWE-36, CWE-59, CWE-73]
+    files: [ghost/core/core/server/adapters/storage/LocalStorageBase.ts, ghost/core/core/server/services/themes/storage.js]
+  - id: django-haystack
+    group: injection
+    advisory: GHSA-r3hx-x5rh-p9vv
+    published: 2026-07-15
+    repo: django-haystack/django-haystack
+    fix: eb05f193c9771a68dcc8cfac6674a0d48a52ee9d
+    cwe: [CWE-94, CWE-95, CWE-96, CWE-1336]
+    files: [haystack/backends/elasticsearch_backend.py]
+
+  - id: lemur
+    group: missing check
+    advisory: GHSA-6c8m-q6g9-vrw3
+    published: 2026-08-18
+    repo: Netflix/lemur
+    fix: 751c970ec42a53d00ecc9c6a96e0e51b6737ae53
+    cwe: &access [CWE-200, CWE-266, CWE-269, CWE-284, CWE-285, CWE-287, CWE-288, CWE-290, CWE-306, CWE-425, CWE-639, CWE-732, CWE-862, CWE-863, CWE-1390]
+    files: [lemur/destinations/schemas.py, lemur/destinations/views.py, lemur/plugins/lemur_sftp/plugin.py]
+    note: plugin.py only marks the SFTP password options as sensitive.
+  - id: fastify
+    group: missing check
+    advisory: GHSA-w2qp-rph6-63g4
+    published: 2026-09-02
+    repo: fastify/fastify
+    fix: 1ef8a60c87e94f42f666aa15ad68957772a83655
+    cwe: [CWE-20, CWE-1284, CWE-1287]
+    files: [lib/validation.js]
+  - id: fuxa
+    group: missing check
+    advisory: GHSA-fwcm-rqvw-j3p7
+    published: 2026-05-26
+    repo: frangoteam/FUXA
+    fix: 78534da61a91613712b44bb63c8d7da8c5df5ca4
+    cwe: *access
+    files: [server/api/command/index.js, server/integrations/node-red/index.js, server/runtime/scripts/index.js]
+    note: command/index.js is the endpoint whose check is bypassed, but its edit only changes the status code from 400 to 401.
+  - id: directus
+    group: missing check
+    advisory: GHSA-c6w9-5g5j-jh2p
+    published: 2026-07-20
+    repo: directus/directus
+    fix: 7ba4efb97525d3af33570537c76e44baea767f13
+    cwe: [CWE-200, CWE-266, CWE-269, CWE-284, CWE-285, CWE-287, CWE-288, CWE-290, CWE-306, CWE-425, CWE-524, CWE-639, CWE-732, CWE-862, CWE-863, CWE-1390]
+    files: [api/src/utils/get-cache-key.ts]
+  - id: sentry
+    group: missing check
+    advisory: GHSA-rcmw-7mc7-3rj7
+    published: 2026-04-30
+    repo: getsentry/sentry
+    fix: 0c67558ae7fe08738912d4c5233b53ead048da3b
+    cwe: *access
+    files: [src/sentry/auth/helper.py]
+  - id: budibase
+    group: missing check
+    advisory: GHSA-4qcj-m5wp-jmf4
+    published: 2026-07-24
+    repo: Budibase/budibase
+    fix: 93db77846e68231ba655f180581c94503985421a
+    cwe: *access
+    files: [packages/worker/src/api/routes/global/groups.ts]
+  - id: better-auth
+    group: missing check
+    advisory: GHSA-wxw3-q3m9-c3jr
+    published: 2026-05-15
+    repo: better-auth/better-auth
+    fix: 9deb7936aba7931f2db4b460141f476508f11bfd
+    cwe: [CWE-200, CWE-266, CWE-269, CWE-284, CWE-285, CWE-287, CWE-288, CWE-290, CWE-306, CWE-345, CWE-346, CWE-347, CWE-352, CWE-425, CWE-639, CWE-732, CWE-862, CWE-863, CWE-1385, CWE-1390]
+    files: [packages/better-auth/src/plugins/oauth-proxy/index.ts, packages/better-auth/src/state.ts]
+  - id: airflow
+    group: missing check
+    advisory: GHSA-4fh7-7jx4-8f6c
+    published: 2026-07-07
+    repo: apache/airflow
+    fix: 992e602015b5e9a3fd297e18047cff9d85094c95
+    cwe: *access
+    files: [airflow-core/src/airflow/api_fastapi/core_api/routes/public/dag_sources.py]
+  - id: vendure
+    group: missing check
+    advisory: GHSA-6j36-r6pr-59x4
+    published: 2026-09-17
+    repo: vendurehq/vendure
+    fix: 3bb04718ea4f9395fda731bd2a4bcfc3afb0a485
+    cwe: *access
+    files: [packages/core/src/common/error/errors.ts, packages/core/src/service/helpers/external-authentication/external-authentication.service.ts]
+    note: errors.ts only gains the new error class.
+  - id: thumbor
+    group: missing check
+    advisory: GHSA-cqjp-jf4r-h5q9
+    published: 2026-07-31
+    repo: thumbor/thumbor
+    fix: 447e192e3fb92e64c12e5354a56a4a7133f69d73
+    cwe: [CWE-20, CWE-369, CWE-1284, CWE-1287]
+    files: [thumbor/filters/convolution.py]
+    note: The fix also changes the C extension thumbor/ext/filters/_convolution.c, which is outside the reviewed languages.
+  - id: jupyterhub
+    group: missing check
+    advisory: GHSA-m68r-v472-jgq9
+    published: 2026-05-05
+    repo: jupyterhub/jupyterhub
+    fix: 9c5ec277d3cda5a59de2d8c8117efa77bd941127
+    cwe: &authenticity [CWE-345, CWE-346, CWE-347, CWE-352, CWE-1385]
+    files: [jupyterhub/_xsrf_utils.py]
+  - id: mcp-python-sdk
+    group: missing check
+    advisory: GHSA-vj7q-gjh5-988w
+    published: 2026-07-16
+    repo: modelcontextprotocol/python-sdk
+    fix: 777b8d06710c140e3606b0d4598e2aa48546c266
+    cwe: *authenticity
+    files: [src/mcp/server/transport_security.py, src/mcp/server/websocket.py]
+    note: transport_security.py only widens a type so WebSocket connections can be validated.

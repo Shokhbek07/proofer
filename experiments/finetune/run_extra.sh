@@ -6,7 +6,7 @@ STUDENT=data/cache/ornith-9b-mlx-4bit
 ADAPTER=data/finetune/adapter-600
 RUN="uv run --group finetune"
 LOG=runs/finetune
-. experiments/finetune/lib.sh
+. experiments/lib.sh
 
 stage "OWASP holdout, step-600 checkpoint"
 need_free 60

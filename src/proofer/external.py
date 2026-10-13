@@ -41,17 +41,22 @@ def scanner_env() -> dict[str, str]:
             if v or k not in ("SSL_CERT_FILE", "SSL_CERT_DIR")}
 
 
-def semgrep_findings(ws: Workspace, config: str = "p/default") -> list[Finding]:
+def semgrep_findings(
+    ws: Workspace, config: str = "p/default", paths: list[str] | None = None
+) -> list[Finding]:
     """Run Semgrep's community rules and convert the results to findings.
+
+    `paths` limits the scan to those files of the workspace.
 
     The rules are fetched by Semgrep at run time and are not part of this
     repository: their licence allows internal use but not redistribution.
     """
     if not semgrep_available():
         raise ScannerError("semgrep is not installed (try: uv tool install semgrep)")
+    targets = [str(ws.resolve(p)) for p in paths] if paths else [str(ws.root)]
     proc = subprocess.run(
         ["semgrep", "scan", "--config", config, "--metrics", "off", "--json", "--quiet",
-         str(ws.root)],
+         *targets],
         capture_output=True, text=True, timeout=900, check=False, env=scanner_env(),
     )
     try:

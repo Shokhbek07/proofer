@@ -1,0 +1,2554 @@
+{
+  "summary": {
+    "target": "realworld",
+    "model": "none",
+    "backend": "ollama",
+    "mode": "patterns",
+    "prompt": "walkthrough",
+    "context": "none",
+    "temperature": 0.0,
+    "repeats": 1,
+    "items": 24,
+    "detected": 2.0,
+    "detected_at_change": 1.0,
+    "fixed_flagged": 2.0,
+    "pair_accuracy": 0.0,
+    "other_findings_vulnerable": 25.0,
+    "other_findings_fixed": 25.0,
+    "errors": 0.0,
+    "seconds_per_run": 0.0,
+    "detected_per_run": [
+      2
+    ],
+    "pair_correct_per_run": [
+      0
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "items": [
+        {
+          "id": "atomic-agents-stack",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "mistune",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "n8n-node-sqlite3",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 6,
+          "other_findings_fixed": 6,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 6,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 6,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 91,
+                  "end_line": 91,
+                  "quote": "function exec(db: BetterSqlite3Database, query: string): { message: string } {",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 92,
+                  "end_line": 92,
+                  "quote": "\tdb.exec(query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 237,
+                  "end_line": 237,
+                  "quote": "\t\t\t\t\tresults = exec(db, query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 91,
+                  "end_line": 91,
+                  "quote": "function exec(db: BetterSqlite3Database, query: string): { message: string } {",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 92,
+                  "end_line": 92,
+                  "quote": "\tdb.exec(query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 237,
+                  "end_line": 237,
+                  "quote": "\t\t\t\t\tresults = exec(db, query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 91,
+                  "end_line": 91,
+                  "quote": "function exec(db: BetterSqlite3Database, query: string): { message: string } {",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 92,
+                  "end_line": 92,
+                  "quote": "\tdb.exec(query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 238,
+                  "end_line": 238,
+                  "quote": "\t\t\t\t\tresults = exec(db, query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 91,
+                  "end_line": 91,
+                  "quote": "function exec(db: BetterSqlite3Database, query: string): { message: string } {",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 92,
+                  "end_line": 92,
+                  "quote": "\tdb.exec(query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 238,
+                  "end_line": 238,
+                  "quote": "\t\t\t\t\tresults = exec(db, query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feathers",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "weblate",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 2,
+          "other_findings_fixed": 2,
+          "stats_vulnerable": {
+            "leads": 3,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 3,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "weblate/vcs/base.py",
+                  "start_line": 241,
+                  "end_line": 241,
+                  "quote": "            process = subprocess.run(",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "weak cryptography",
+              "cwe": "CWE-327",
+              "severity": "medium",
+              "summary": "pattern match for weak cryptography",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "weblate/vcs/base.py",
+                  "start_line": 566,
+                  "end_line": 566,
+                  "quote": "        objhash = hashlib.sha1(usedforsecurity=False)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "command injection",
+              "cwe": "CWE-78",
+              "severity": "medium",
+              "summary": "pattern match for command injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "weblate/vcs/base.py",
+                  "start_line": 244,
+                  "end_line": 244,
+                  "quote": "            process = subprocess.run(",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "weak cryptography",
+              "cwe": "CWE-327",
+              "severity": "medium",
+              "summary": "pattern match for weak cryptography",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "weblate/vcs/base.py",
+                  "start_line": 569,
+                  "end_line": 569,
+                  "quote": "        objhash = hashlib.sha1(usedforsecurity=False)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hono",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "taipy",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 3,
+          "other_findings_fixed": 3,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 3,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 3,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "xml external entities",
+              "cwe": "CWE-611",
+              "severity": "medium",
+              "summary": "pattern match for xml external entities",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 185,
+                  "end_line": 185,
+                  "quote": "                xml_root = etree.fromstring(xhtml)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 458,
+                  "end_line": 458,
+                  "quote": "    __RE_PROP_VAR = re.compile(r\"<tp:prop:(\\w+)>\")",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 459,
+                  "end_line": 459,
+                  "quote": "    __RE_UNIQUE_VAR = re.compile(r\"<tp:uniq:(\\w+)>\")",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "xml external entities",
+              "cwe": "CWE-611",
+              "severity": "medium",
+              "summary": "pattern match for xml external entities",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 185,
+                  "end_line": 185,
+                  "quote": "                xml_root = etree.fromstring(xhtml)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 458,
+                  "end_line": 458,
+                  "quote": "    __RE_PROP_VAR = re.compile(r\"<tp:prop:(\\w+)>\")",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 459,
+                  "end_line": 459,
+                  "quote": "    __RE_UNIQUE_VAR = re.compile(r\"<tp:uniq:(\\w+)>\")",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pyjwt",
+          "detected": true,
+          "detected_at_change": false,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "jwt verification",
+              "cwe": "CWE-347",
+              "severity": "medium",
+              "summary": "pattern match for jwt verification",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "jwt/jwks_client.py",
+                  "start_line": 224,
+                  "end_line": 224,
+                  "quote": "        unverified = decode_token(token, options={\"verify_signature\": False})",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "jwt verification",
+              "cwe": "CWE-347",
+              "severity": "medium",
+              "summary": "pattern match for jwt verification",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "jwt/jwks_client.py",
+                  "start_line": 239,
+                  "end_line": 239,
+                  "quote": "        unverified = decode_token(token, options={\"verify_signature\": False})",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "flowise",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "cyberchef",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "ghost",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "django-haystack",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 48,
+                  "end_line": 48,
+                  "quote": "DATETIME_REGEX = re.compile(",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 865,
+                  "end_line": 865,
+                  "quote": "            converted_value = eval(value)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 49,
+                  "end_line": 49,
+                  "quote": "DATETIME_REGEX = re.compile(",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lemur",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 3,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 3,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "fastify",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 8,
+          "other_findings_fixed": 8,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 8,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 8,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 35,
+                  "end_line": 35,
+                  "quote": "          contentTypesSchemas[mediaName] = compile({",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 45,
+                  "end_line": 45,
+                  "quote": "        acc[statusCode] = compile({",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 69,
+                  "end_line": 69,
+                  "quote": "    context[headersSchema] = compile({ schema: headers, method, url, httpPart: 'headers' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 84,
+                  "end_line": 84,
+                  "quote": "    context[headersSchema] = compile({ schema: headersSchemaLowerCase, method, url, httpPart: 'headers' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 95,
+                  "end_line": 95,
+                  "quote": "        contentTypeSchemas[contentType] = compile({ schema: contentSchema, method, url, httpPart: 'body', contentType })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 99,
+                  "end_line": 99,
+                  "quote": "      context[bodySchema] = compile({ schema: schema.body, method, url, httpPart: 'body' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F007",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 106,
+                  "end_line": 106,
+                  "quote": "    context[querystringSchema] = compile({ schema: schema.querystring, method, url, httpPart: 'querystring' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F008",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 112,
+                  "end_line": 112,
+                  "quote": "    context[paramsSchema] = compile({ schema: schema.params, method, url, httpPart: 'params' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 35,
+                  "end_line": 35,
+                  "quote": "          contentTypesSchemas[mediaName] = compile({",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 45,
+                  "end_line": 45,
+                  "quote": "        acc[statusCode] = compile({",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 69,
+                  "end_line": 69,
+                  "quote": "    context[headersSchema] = compile({ schema: headers, method, url, httpPart: 'headers' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 84,
+                  "end_line": 84,
+                  "quote": "    context[headersSchema] = compile({ schema: headersSchemaLowerCase, method, url, httpPart: 'headers' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 95,
+                  "end_line": 95,
+                  "quote": "        contentTypeSchemas[contentType] = compile({ schema: contentSchema, method, url, httpPart: 'body', contentType })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 99,
+                  "end_line": 99,
+                  "quote": "      context[bodySchema] = compile({ schema: schema.body, method, url, httpPart: 'body' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F007",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 106,
+                  "end_line": 106,
+                  "quote": "    context[querystringSchema] = compile({ schema: schema.querystring, method, url, httpPart: 'querystring' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F008",
+              "title": "code injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "pattern match for code injection",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "lib/validation.js",
+                  "start_line": 112,
+                  "end_line": 112,
+                  "quote": "    context[paramsSchema] = compile({ schema: schema.params, method, url, httpPart: 'params' })",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fuxa",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 3,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 3,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "directus",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "sentry",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "budibase",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "better-auth",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 5,
+          "other_findings_fixed": 5,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 5,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 5,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 449,
+                  "end_line": 449,
+                  "quote": "\t\t\t\t\t\t\t\taccessToken: tokens.accessToken,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 450,
+                  "end_line": 450,
+                  "quote": "\t\t\t\t\t\t\t\trefreshToken: tokens.refreshToken,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 451,
+                  "end_line": 451,
+                  "quote": "\t\t\t\t\t\t\t\tidToken: tokens.idToken,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 452,
+                  "end_line": 452,
+                  "quote": "\t\t\t\t\t\t\t\taccessTokenExpiresAt: tokens.accessTokenExpiresAt,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 453,
+                  "end_line": 453,
+                  "quote": "\t\t\t\t\t\t\t\trefreshTokenExpiresAt: tokens.refreshTokenExpiresAt,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 458,
+                  "end_line": 458,
+                  "quote": "\t\t\t\t\t\t\t\taccessToken: tokens.accessToken,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 459,
+                  "end_line": 459,
+                  "quote": "\t\t\t\t\t\t\t\trefreshToken: tokens.refreshToken,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 460,
+                  "end_line": 460,
+                  "quote": "\t\t\t\t\t\t\t\tidToken: tokens.idToken,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 461,
+                  "end_line": 461,
+                  "quote": "\t\t\t\t\t\t\t\taccessTokenExpiresAt: tokens.accessTokenExpiresAt,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 462,
+                  "end_line": 462,
+                  "quote": "\t\t\t\t\t\t\t\trefreshTokenExpiresAt: tokens.refreshTokenExpiresAt,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "airflow",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "vendure",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "thumbor",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "jupyterhub",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "jupyterhub/_xsrf_utils.py",
+                  "start_line": 153,
+                  "end_line": 153,
+                  "quote": "    cookie_token = xsrf_token",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "hardcoded secret",
+              "cwe": "CWE-798",
+              "severity": "medium",
+              "summary": "pattern match for hardcoded secret",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "jupyterhub/_xsrf_utils.py",
+                  "start_line": 153,
+                  "end_line": 153,
+                  "quote": "    cookie_token = xsrf_token",
+                  "role": "sink"
+                }
+              ],
+              "origin": "patterns",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mcp-python-sdk",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        }
+      ]
+    }
+  ]
+}

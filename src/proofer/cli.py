@@ -24,7 +24,8 @@ from .external import ScannerError
 from .judge import VARIANTS
 from .leads import find_leads
 from .llm import ChatClient, LLMError, OllamaClient
-from .pipeline import MODES, scan
+from .pipeline import CONTEXTS, MODES, scan
+from .realworld import RealTruth, item_dir, load_changes, score_item
 from .report import to_markdown
 from .workspace import Workspace, WorkspaceError
 
@@ -33,7 +34,7 @@ def _progress(message: str) -> None:
     print(message, file=sys.stderr, flush=True)
 
 
-def _client(args: argparse.Namespace, seed: int = 7) -> ChatClient | None:
+def _client(args: argparse.Namespace, seed: int | None = None) -> ChatClient | None:
     if args.mode in ("patterns", "semgrep"):
         return None
     if args.backend == "mlx":
@@ -43,7 +44,8 @@ def _client(args: argparse.Namespace, seed: int = 7) -> ChatClient | None:
                          temperature=args.temperature)
     think = {"on": True, "off": False}.get(args.think)
     return OllamaClient(args.model, host=args.host, num_ctx=args.num_ctx, think=think,
-                        seed=seed, temperature=args.temperature, max_tokens=args.max_tokens)
+                        seed=args.seed if seed is None else seed, temperature=args.temperature,
+                        max_tokens=args.max_tokens)
 
 
 def _review_options(args: argparse.Namespace) -> dict[str, object]:
@@ -51,7 +53,15 @@ def _review_options(args: argparse.Namespace) -> dict[str, object]:
         "variant": args.prompt,
         "strip_comments": args.strip_comments,
         "trust_boundary": not args.no_trust_boundary,
+        "context": args.context,
     }
+
+
+def _label(args: argparse.Namespace) -> str:
+    """The configuration part of a result file name."""
+    model = args.model.replace("/", "_").replace(":", "_")
+    return (f"{model}-{args.mode}-{args.prompt}{'-map' if args.context == 'map' else ''}"
+            f"{'-tuned' if args.adapter else ''}")
 
 
 def _cmd_leads(args: argparse.Namespace) -> int:
@@ -68,7 +78,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     with (out_dir / "trace.jsonl").open("w") as trace_file:
         result = scan(ws, _client(args), args.mode, args.max_leads, args.max_steps,
-                      _progress, trace_file, **_review_options(args))
+                      _progress, trace_file, only=args.files, **_review_options(args))
     (out_dir / "findings.json").write_text(
         json.dumps([f.model_dump(mode="json") for f in result.findings], indent=2)
     )
@@ -92,13 +102,13 @@ def _cmd_eval(args: argparse.Namespace) -> int:
         if args.plant:
             plant_instructions(vulnerable, truth)
         for repeat in range(args.repeats):
-            client = _client(args, seed=7 + repeat)
+            client = _client(args, seed=args.seed + repeat)
             _progress(f"== repeat {repeat + 1}/{args.repeats}: vulnerable tree")
             vuln = scan(Workspace(vulnerable), client, args.mode, None, args.max_steps, _progress,
                         **_review_options(args))
             s_vuln = score(vuln.findings, vulnerable, truth, patched=set())
             run = {
-                "seed": 7 + repeat,
+                "seed": args.seed + repeat,
                 "vulnerable": {**s_vuln.summary(), **vuln.stats()},
                 "findings_vulnerable": [f.model_dump(mode="json") for f in vuln.findings],
             }
@@ -134,6 +144,7 @@ def _cmd_eval(args: argparse.Namespace) -> int:
         "planted_instructions": args.plant,
         "strip_comments": args.strip_comments,
         "trust_boundary": not args.no_trust_boundary,
+        "context": args.context,
         "twin_scanned": not args.skip_twin,
         "repeats": args.repeats,
         "recall": avg(r["vulnerable"]["recall"] for r in runs),
@@ -148,7 +159,7 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     }
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    name = f"{args.model.replace('/', '_').replace(':', '_')}-{args.mode}-{args.prompt}{'-tuned' if args.adapter else ''}-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    name = f"{_label(args)}-{time.strftime('%Y%m%d-%H%M%S')}.json"
     (out_dir / name).write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
     print(json.dumps(summary, indent=2))
     print(f"details: {out_dir / name}", file=sys.stderr)
@@ -163,7 +174,7 @@ def _cmd_eval_pairs(args: argparse.Namespace) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         vulnerable, secure = materialise_pairs(Path(args.source).resolve(), Path(tmp) / "pairs", truth)
         for repeat in range(args.repeats):
-            client = _client(args, seed=7 + repeat)
+            client = _client(args, seed=args.seed + repeat)
             _progress(f"== repeat {repeat + 1}/{args.repeats}: vulnerable versions")
             vuln = scan(Workspace(vulnerable), client, args.mode, None, args.max_steps, _progress,
                         **_review_options(args))
@@ -173,7 +184,7 @@ def _cmd_eval_pairs(args: argparse.Namespace) -> int:
             detected, other_vuln = flagged_modules(vuln.findings, truth)
             still, other_safe = flagged_modules(safe.findings, truth)
             runs.append({
-                "seed": 7 + repeat,
+                "seed": args.seed + repeat,
                 "detected": sorted(detected),
                 "missed": sorted(set(ids) - detected),
                 "secure_flagged": sorted(still),
@@ -197,6 +208,7 @@ def _cmd_eval_pairs(args: argparse.Namespace) -> int:
         "adapter": args.adapter,
         "mode": args.mode,
         "prompt": args.prompt,
+        "context": args.context,
         "temperature": args.temperature,
         "repeats": args.repeats,
         "modules": n,
@@ -210,7 +222,77 @@ def _cmd_eval_pairs(args: argparse.Namespace) -> int:
     }
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    name = f"{truth.target}-{args.model.replace('/', '_').replace(':', '_')}-{args.mode}-{args.prompt}{'-tuned' if args.adapter else ''}-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    name = f"{truth.target}-{_label(args)}-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    (out_dir / name).write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
+    print(json.dumps(summary, indent=2))
+    print(f"details: {out_dir / name}", file=sys.stderr)
+    return 0
+
+
+def _cmd_eval_real(args: argparse.Namespace) -> int:
+    """Score the agent on real fixes: each changed file before and after its fix."""
+    truth = RealTruth.load(args.truth)
+    source = Path(args.source).resolve()
+    items = [i for i in truth.items if not args.items or i.id in args.items]
+    changes = {i.id: load_changes(source, i) for i in items}
+    runs = []
+    for repeat in range(args.repeats):
+        client = _client(args, seed=args.seed + repeat)
+        rows = []
+        for k, item in enumerate(items, start=1):
+            found = {}
+            for side in ("vulnerable", "fixed"):
+                _progress(f"== repeat {repeat + 1}/{args.repeats}, item {k}/{len(items)} "
+                          f"{item.id}: {side}")
+                # Tiers are not scored here, and Semgrep over a whole real
+                # repository costs minutes per side, so it is not run.
+                found[side] = scan(Workspace(item_dir(source, item) / side), client, args.mode,
+                                   None, args.max_steps, _progress, corroborate=False,
+                                   only=item.files, **_review_options(args))
+            row = score_item(found["vulnerable"].findings, found["fixed"].findings, item,
+                             changes[item.id])
+            row.update({
+                "stats_vulnerable": found["vulnerable"].stats(),
+                "stats_fixed": found["fixed"].stats(),
+                "findings_vulnerable": [f.model_dump(mode="json") for f in found["vulnerable"].findings],
+                "findings_fixed": [f.model_dump(mode="json") for f in found["fixed"].findings],
+            })
+            rows.append(row)
+        runs.append({"seed": args.seed + repeat, "items": rows})
+
+    def avg(values) -> float:
+        return round(statistics.fmean(values), 3)
+
+    def count(run: dict, key: str) -> int:
+        return sum(1 for row in run["items"] if row[key])
+
+    n = len(items)
+    summary = {
+        "target": truth.target,
+        "model": args.model,
+        "backend": args.backend,
+        "mode": args.mode,
+        "prompt": args.prompt,
+        "context": args.context,
+        "temperature": args.temperature,
+        "repeats": args.repeats,
+        "items": n,
+        "detected": avg(count(r, "detected") for r in runs),
+        "detected_at_change": avg(count(r, "detected_at_change") for r in runs),
+        "fixed_flagged": avg(count(r, "fixed_flagged") for r in runs),
+        "pair_accuracy": avg(count(r, "pair_correct") / n for r in runs),
+        "other_findings_vulnerable": avg(sum(row["other_findings_vulnerable"] for row in r["items"]) for r in runs),
+        "other_findings_fixed": avg(sum(row["other_findings_fixed"] for row in r["items"]) for r in runs),
+        "errors": avg(sum(len(row["stats_vulnerable"]["errors"]) + len(row["stats_fixed"]["errors"])
+                          for row in r["items"]) for r in runs),
+        "seconds_per_run": avg(sum(row["stats_vulnerable"]["seconds"] + row["stats_fixed"]["seconds"]
+                                   for row in r["items"]) for r in runs),
+        "detected_per_run": [count(r, "detected") for r in runs],
+        "pair_correct_per_run": [count(r, "pair_correct") for r in runs],
+    }
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    name = f"{truth.target}-{_label(args)}-{time.strftime('%Y%m%d-%H%M%S')}.json"
     (out_dir / name).write_text(json.dumps({"summary": summary, "runs": runs}, indent=2))
     print(json.dumps(summary, indent=2))
     print(f"details: {out_dir / name}", file=sys.stderr)
@@ -224,6 +306,8 @@ def main(argv: list[str] | None = None) -> int:
     def model_options(p: argparse.ArgumentParser) -> None:
         p.add_argument("--model", default="none", help="Model name in the local runtime.")
         p.add_argument("--temperature", type=float, default=0.0)
+        p.add_argument("--seed", type=int, default=7,
+                       help="Sampling seed; repeat k of an evaluation uses seed + k.")
         p.add_argument("--backend", choices=["ollama", "mlx"], default="ollama",
                        help="mlx loads a local MLX model in process, without schema enforcement.")
         p.add_argument("--adapter", default=None, help="LoRA adapter directory, mlx backend only.")
@@ -239,6 +323,9 @@ def main(argv: list[str] | None = None) -> int:
                        help="Experiment only: drop the instruction to distrust repository text.")
         p.add_argument("--prompt", choices=VARIANTS, default="walkthrough",
                        help="Slice review prompt: plain, or walkthrough (analysis before findings).")
+        p.add_argument("--context", choices=CONTEXTS, default="none",
+                       help="map adds a map of the whole repository (entry points, the "
+                            "protections they use, definitions) to each file's prompt.")
 
     p_leads = sub.add_parser("leads", help="List the places the agent would review.")
     p_leads.add_argument("path", help="Repository to review.")
@@ -249,6 +336,8 @@ def main(argv: list[str] | None = None) -> int:
     p_scan.add_argument("path", help="Repository to review.")
     p_scan.add_argument("--max-leads", type=int, default=None)
     p_scan.add_argument("--out", default="runs")
+    p_scan.add_argument("--files", nargs="+", default=None, metavar="PATH",
+                        help="Review only these files (paths relative to the repository).")
     model_options(p_scan)
     p_scan.set_defaults(func=_cmd_scan)
 
@@ -273,6 +362,18 @@ def main(argv: list[str] | None = None) -> int:
     p_pairs.add_argument("--out", default="runs/eval")
     model_options(p_pairs)
     p_pairs.set_defaults(func=_cmd_eval_pairs)
+
+    p_real = sub.add_parser(
+        "eval-real", help="Score the agent on real security fixes, before and after each fix."
+    )
+    p_real.add_argument("--source", default="bench/external/realworld")
+    p_real.add_argument("--truth", default="bench/truth/realworld.yaml")
+    p_real.add_argument("--items", nargs="+", default=None, metavar="ID",
+                        help="Score only these items.")
+    p_real.add_argument("--repeats", type=int, default=1)
+    p_real.add_argument("--out", default="runs/eval")
+    model_options(p_real)
+    p_real.set_defaults(func=_cmd_eval_real)
 
     args = parser.parse_args(argv)
     try:

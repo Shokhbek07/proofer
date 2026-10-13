@@ -22,6 +22,7 @@ from .llm import ChatClient, GenerationError
 from .workspace import Workspace, WorkspaceError
 
 MAX_FILE_LINES = 400
+WINDOW_OVERLAP = 40
 MAX_HELPERS = 6
 HELPER_LINES = 24
 
@@ -135,6 +136,7 @@ class Review:
     findings: list[Finding] = field(default_factory=list)
     discarded: list[Finding] = field(default_factory=list)
     prompt_tokens: int = 0
+    largest_prompt: int = 0  # tokens; shows how close a call came to the context limit
     completion_tokens: int = 0
     seconds: float = 0.0
     error: str = ""
@@ -169,22 +171,53 @@ def imported_names(lines: list[str]) -> list[str]:
     return names
 
 
-def helper_definitions(ws: Workspace, path: str, lines: list[str]) -> str:
-    """Definitions of local helpers the file imports, so the model need not guess."""
-    blocks: list[str] = []
-    for name in imported_names(lines):
-        if len(blocks) >= MAX_HELPERS:
-            break
-        pattern = rf"^\s*(?:async\s+)?(?:def|function|class)\s+{re.escape(name)}\b|^\s*(?:const|let|var)\s+{re.escape(name)}\s*="
-        hits = [h for h in ws.grep(pattern, max_hits=3) if h.path != path]
-        if not hits:
-            continue
-        hit = hits[0]
+def _definition_sites(ws: Workspace, names: list[str], per_name: int = 3) -> dict[str, list[tuple[str, int]]]:
+    """The first few places each name is defined, in one pass over the repository.
+
+    One search per imported name meant dozens of passes over a large repository
+    for every file reviewed.
+    """
+    sites: dict[str, list[tuple[str, int]]] = {name: [] for name in names}
+    if not names:
+        return sites
+    alternatives = "|".join(re.escape(n) for n in names)
+    rx = re.compile(
+        rf"^\s*(?:async\s+)?(?:def|function|class)\s+({alternatives})\b"
+        rf"|^\s*(?:const|let|var)\s+({alternatives})\s*="
+    )
+    for rel in ws.files():
         try:
-            body = ws.read(hit.path, hit.line, hit.line + HELPER_LINES - 1)
+            file_lines = ws.lines(rel)
         except WorkspaceError:
             continue
-        blocks.append(f"--- {hit.path} (definition of {name}) ---\n{body}")
+        for n, text in enumerate(file_lines, start=1):
+            m = rx.match(text)
+            if m:
+                found = sites[m.group(1) or m.group(2)]
+                if len(found) < per_name:
+                    found.append((rel, n))
+        if all(len(found) >= per_name for found in sites.values()):
+            break
+    return sites
+
+
+def helper_definitions(ws: Workspace, path: str, lines: list[str]) -> str:
+    """Definitions of local helpers the file imports, so the model need not guess."""
+    names = imported_names(lines)
+    sites = _definition_sites(ws, names)
+    blocks: list[str] = []
+    for name in names:
+        if len(blocks) >= MAX_HELPERS:
+            break
+        hits = [site for site in sites[name] if site[0] != path]
+        if not hits:
+            continue
+        where, line = hits[0]
+        try:
+            body = ws.read(where, line, line + HELPER_LINES - 1)
+        except WorkspaceError:
+            continue
+        blocks.append(f"--- {where} (definition of {name}) ---\n{body}")
     return "\n\n".join(blocks)
 
 
@@ -201,19 +234,54 @@ def blank_comments(lines: list[str]) -> list[str]:
             for line in lines]
 
 
+def windows(
+    n_lines: int, size: int = MAX_FILE_LINES, overlap: int = WINDOW_OVERLAP
+) -> list[tuple[int, int]]:
+    """Line ranges (1-based, inclusive) that cover a file in reviewable pieces.
+
+    A long file used to be cut at `size` lines, so anything below was never
+    reviewed. The pieces overlap so a handler on a boundary is seen whole once.
+    """
+    if n_lines <= size:
+        return [(1, max(n_lines, 1))]
+    spans: list[tuple[int, int]] = []
+    start = 1
+    while True:
+        end = min(start + size - 1, n_lines)
+        spans.append((start, end))
+        if end == n_lines:
+            return spans
+        start = end - overlap + 1
+
+
 def build_prompt(
-    ws: Workspace, lead: Lead, variant: str = "plain", strip_comments: bool = False
+    ws: Workspace,
+    lead: Lead,
+    variant: str = "plain",
+    strip_comments: bool = False,
+    span: tuple[int, int] | None = None,
+    context: str = "",
 ) -> str:
     lines = ws.lines(lead.path)
-    shown = lines[:MAX_FILE_LINES]
+    first, last = span or windows(len(lines))[0]
+    shown = lines[first - 1:last]
     if strip_comments:
         shown = blank_comments(shown)
-    numbered = "\n".join(f"{n}| {text}" for n, text in enumerate(shown, start=1))
+    numbered = "\n".join(f"{n}| {text}" for n, text in enumerate(shown, start=first))
     parts = [f"Review the file `{lead.path}`."]
-    if lead.hints:
+    if (first, last) != (1, max(len(lines), 1)):
+        parts[0] += (
+            f" It has {len(lines)} lines; this part shows lines {first} to {last}, "
+            "and the other parts are reviewed separately."
+        )
+    hints = {
+        cls: [n for n in nums if first <= n <= last] for cls, nums in lead.hints.items()
+    }
+    hints = {cls: nums for cls, nums in hints.items() if nums}
+    if hints:
         hint_lines = [
             f"- {cls}: line {', '.join(str(n) for n in nums[:8])}"
-            for cls, nums in sorted(lead.hints.items())
+            for cls, nums in sorted(hints.items())
         ]
         parts.append(
             "Pattern matching flagged these lines. They are only pointers and are often "
@@ -226,6 +294,8 @@ def build_prompt(
             "Definitions of local helpers this file uses, for context only. "
             f"Report findings only in `{lead.path}`.\n" + wrap_untrusted(helpers)
         )
+    if context:
+        parts.append(context)
     if variant == "walkthrough":
         parts.append(WALKTHROUGH_INSTRUCTION)
     else:
@@ -240,42 +310,64 @@ def review_file(
     variant: str = "plain",
     strip_comments: bool = False,
     trust_boundary: bool = True,
+    context: str = "",
 ) -> Review:
+    """Review one file, in several calls when it is longer than one window."""
     review = Review(path=lead.path)
     try:
-        prompt = build_prompt(ws, lead, variant, strip_comments)
+        spans = windows(len(ws.lines(lead.path)))
     except WorkspaceError as exc:
         review.error = str(exc)
         return review
     # The switch exists only to measure what the trust-boundary text is worth.
     system = SYSTEM_PROMPT + (TRUST_BOUNDARY if trust_boundary else "")
+    schema = WALKTHROUGH_SCHEMA if variant == "walkthrough" else FINDINGS_SCHEMA
+    errors: list[str] = []
+    for span in spans:
+        prompt = build_prompt(ws, lead, variant, strip_comments, span, context)
+        error = _review_part(client, ws, system, prompt, schema, review)
+        if error:
+            errors.append(error if len(spans) == 1 else f"lines {span[0]}-{span[1]}: {error}")
+    review.error = "; ".join(errors)
+    return review
+
+
+def _review_part(
+    client: ChatClient,
+    ws: Workspace,
+    system: str,
+    prompt: str,
+    schema: dict[str, object],
+    review: Review,
+) -> str:
+    """One model call; findings are added to `review`, and any error is returned."""
     try:
         result = client.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-            schema=WALKTHROUGH_SCHEMA if variant == "walkthrough" else FINDINGS_SCHEMA,
+            schema=schema,
         )
     except GenerationError as exc:
         # One runaway answer costs this file, not the whole scan.
-        review.error = str(exc)
-        return review
-    review.prompt_tokens = result.prompt_tokens
-    review.completion_tokens = result.completion_tokens
-    review.seconds = result.seconds
+        return str(exc)
+    review.prompt_tokens += result.prompt_tokens
+    review.largest_prompt = max(review.largest_prompt, result.prompt_tokens)
+    review.completion_tokens += result.completion_tokens
+    review.seconds += result.seconds
     try:
         raw_findings = json.loads(result.content).get("findings", [])
     except (json.JSONDecodeError, AttributeError):
-        review.error = (
+        return (
             "output budget exhausted before an answer" if result.truncated
             else "model did not return valid JSON"
         )
-        return review
 
+    error = ""
     for raw in raw_findings:
         try:
             raw["evidence"] = [Evidence(**e) for e in raw.get("evidence") or []]
             finding = Finding(**raw)
         except (ValidationError, TypeError):
-            review.error = "one finding had invalid fields and was dropped"
+            error = "one finding had invalid fields and was dropped"
             continue
         check = check_evidence(ws, finding)
         finding.checks.append(check)
@@ -284,7 +376,7 @@ def review_file(
         else:
             finding.tier = Tier.REJECTED
             review.discarded.append(finding)
-    return review
+    return error
 
 
 HEDGE = re.compile(

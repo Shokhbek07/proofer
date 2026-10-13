@@ -464,3 +464,136 @@ Learned:
 
 Reproduce: `experiments/finetune/build_dataset.py`, then `experiments/finetune/run.sh` and `experiments/finetune/run_extra.sh`.
 Raw results are in `results/finetune/` and `results/eval/`.
+
+## E12 to E14 - Real fixes, the project map, and repeats (2026-10-03, written before any model run)
+
+These three are measured in one batch of runs, so they share a setup and are pre-registered together.
+Every configuration uses Gemma 4 26B-A4B with the analysis-first prompt, temperature 0.7, and seeds 7 to 11, one run per seed.
+
+### Changes to the code since E11
+
+None of these changes what the model sees on the bakery or DVWA.
+For all 60 bakery and DVWA files the lead list and both prompt variants were compared with the committed version, and all are identical.
+
+- Files longer than 400 lines used to be cut at line 400, and everything below was never reviewed.
+  Such files are now reviewed in 400-line windows that overlap by 40 lines.
+  No bakery or DVWA file is that long, so this mattered only once real projects were added.
+- Template file types (`.html`, `.jinja`, `.ejs` and others) now count as code.
+- The lookup of helper definitions searched the whole repository once per imported name, which took minutes per file on a large project; it is now one pass with the same output.
+- `--context map` adds a project map to each file's prompt (`src/proofer/context.py`, described under E13).
+- `eval-real`, `--seed` and `scan --files` were added; Semgrep can be limited to given files.
+- Each scan now records its largest prompt in tokens.
+
+### E12 - Real security fixes published after the model
+
+**Question.** The bakery is small and was written by the same author as the patterns, and DVWA is old enough to be in any model's training data.
+How does Proofer do on real projects, on weaknesses published after the model was released, and does it recognise the fixes?
+
+**Data.** `bench/truth/realworld.yaml`: 24 GitHub advisories published from 2026-04-03 to 2026-09-30, each with a single fix commit.
+Twelve are injection-type (path traversal, cross-site scripting, prototype pollution, server-side request forgery, code injection).
+Twelve are missing checks (authorisation, authentication, CSRF and origin checks, input validation).
+The selection rule is in the file header: a mechanical filter over the advisory database, a seeded random order, then a stated inclusion rule and a length limit, with every exclusion listed.
+Gemma 4's training data ends in January 2025 according to its model card, and it was released on 2 April 2026.
+So it cannot have seen these advisories or their fixes, although it may have seen older versions of the vulnerable code.
+
+**Procedure.** Each project is checked out at the fix commit's parent (vulnerable) and at the fix (fixed), with `scripts/fetch_realworld.py`.
+Only the files the fix modified are reviewed, 1 to 3 per item, 48 model calls per side for the whole set.
+The whole repository is present, so helper definitions and the project map can draw on it.
+
+**Metrics** (`src/proofer/realworld.py`):
+
+- `detected`: a finding of the item's weakness family in one of its files, on the vulnerable side.
+- `detected_at_change`: the same, and the finding quotes lines within 3 of a line the fix changed. This is the stricter number.
+- `fixed_flagged`: a finding of the family in those files on the fixed side.
+- `pair_correct`: detected, and not flagged once fixed.
+- `other findings`: everything else in those files. Real projects contain other weaknesses, so these are counted and not judged.
+
+**Configurations.** Own patterns and Semgrep (`p/default`, on the same files) as no-model baselines, and Gemma 4 as above, without the map (the E14 runs).
+
+**What I expect.** Much lower numbers than on DVWA.
+My guess is 8 to 12 of 24 detected, 5 to 8 at the changed lines, 3 to 6 pairs correct, with the missing-check group below the injection group.
+Many other findings on both sides.
+
+**Known weaknesses of the design, stated in advance.**
+
+- 24 items, so one item moves pair accuracy by about 4 points.
+- Precision cannot be computed, because other findings are not judged.
+- A finding of the right family in the right file counts as detected even if it describes a different flaw; `detected_at_change` guards against that.
+- A fix can be incomplete (the Hono advisory is itself about an incomplete earlier fix), so a finding on the fixed side is not always wrong.
+- Some weaknesses are only visible together with code outside the reviewed files, for example the C extension behind the Thumbor filter.
+- The inclusion judgements were made by one person, before any model run.
+- The largest prompt is about 34,000 characters.
+  At the 3.4 to 3.8 characters per token measured on the bakery that is about 10,000 tokens, inside the 12,288 left after the 4,096-token answer budget in a 16,384-token context.
+  The recorded largest prompt per scan will show whether that held.
+
+### E13 - Does a project map help?
+
+**Question.** In E3 every miss by the better model was an absence or a logic flaw, such as an ownership check the other handlers perform.
+The model reviews one file at a time and cannot compare a handler with its peers.
+Does a mechanical map of the repository fix that?
+
+**The map** (`src/proofer/context.py`) is built without a model.
+For the file under review it lists the file's entry points (routes, or request-reading PHP files) and the protections found on each: guard decorators, middleware, calls whose names mention authentication, permissions, CSRF, validation or escaping, and comparisons with the current user.
+It then lists the protections used by entry points in other files of the same language, with counts and where each is defined, and the definitions of functions the file calls that live in other files.
+It is marked as context, not evidence, and wrapped as untrusted repository text.
+On the bakery it adds about 660 characters per prompt on average, and on the real projects 0 to 7,600.
+
+**Design.** Map against no map, five runs each, on the bakery (vulnerable tree and patched twin), DVWA and the real fixes.
+DVWA files are single handlers with no shared code, so the map has little to offer there; it is a check that the map does no harm.
+
+**Adoption rule, fixed now.** The map becomes the default if, averaged over the five runs:
+
+- pairs correct on the real fixes rise by at least 2 of 24, and
+- pairs correct fall by no more than 1 on the bakery (of 17) and on DVWA (of 10).
+
+Otherwise it stays an option and the result is reported either way.
+If the batch stops early, the rule is applied to the seeds completed for both arms, and that is stated.
+
+**What I expect.** A small gain on missing checks where peers exist (the bakery's order lookup, Budibase's group routes), nothing on DVWA, and a risk of more false findings on the patched twin, because a fixed handler may still look different from its peers.
+I expect the rule to be met narrowly or not at all.
+
+### E14 - How stable are the headline numbers?
+
+**Question.** Earlier headline numbers are single runs, mostly at temperature 0, and E6 had three runs on the bakery only.
+What is the spread over five runs, on all three targets?
+
+**Design.** The no-map runs of E13: five runs at temperature 0.7, seeds 7 to 11.
+Reported for each metric: mean, minimum and maximum, and for each weakness or item, the number of runs that found it.
+
+**Earlier numbers to compare with.** Bakery: 16 of 17 found and pair accuracy 0.882 at temperature 0 (E5), and a mean of 16.0 and 0.823 over three runs at 0.7 (E6).
+DVWA: 8 of 10 detected, 0 secure versions flagged, pair accuracy 0.80 (E7), and 8, 1 and 0.70 in a later run (E8).
+
+**What I expect.** Bakery 15 to 17 found and pair accuracy 0.71 to 0.88; DVWA 7 to 9 detected; on the real fixes a range of about 2 items either way.
+
+**Run.** `experiments/followup/run.sh`, about 10 to 11 hours with nothing else on the GPU.
+Every stage is one configuration and one seed, and stages are interleaved by seed.
+
+### E12 to E14 - Status on 2026-10-13 (interim, one of five seeds)
+
+The batch ran on 2026-10-08 from 01:10 and was paused at 06:49, during the second seed.
+Seed 7 is complete for all six configurations; seeds 8 to 11 have not run.
+One seed takes about 4 hours 40 minutes, so these are single runs and say nothing yet about spread (E14) or about the map (E13, whose rule needs the averages).
+
+| Seed 7, temperature 0.7 | No map | Map |
+|---|---|---|
+| Real fixes: detected, of 24 | 4 | 5 |
+| Real fixes: detected at the changed lines | 4 | 4 |
+| Real fixes: fixed version still flagged | 3 | 4 |
+| Real fixes: pairs correct, of 24 | 3 | 2 |
+| Bakery: found, of 17 | 15 | 16 |
+| Bakery: pair accuracy | 0.824 | 0.882 |
+| DVWA: detected, of 10 | 8 | 7 |
+| DVWA: secure version flagged | 1 | 2 |
+| DVWA: pairs correct, of 10 | 7 | 5 |
+
+Baselines on the real fixes: own patterns detect 2 and get 0 pairs correct; Semgrep detects 2 and gets 1 pair correct (the `eval()` in django-haystack).
+
+So far the real fixes are far harder than predicted: 4 of 24 detected against an expected 8 to 12.
+Every model scan finished without an error, and the largest prompt was 10,803 tokens, inside the 12,288 left for the prompt.
+A real-fix run takes about 100 minutes against 25 for the bakery.
+
+One change to the run script after pre-registration: the memory guard before each stage was lowered from 75 to 68 percent free.
+With Docker stopped this machine idles at about 74 percent free, so a 75 percent gate could never pass; 68 percent still blocks a second large model or a running Docker VM.
+The model is still unloaded after every stage, so only one large model is ever loaded.
+
+Raw files: `results/followup/`.

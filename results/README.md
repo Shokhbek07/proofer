@@ -58,3 +58,21 @@ Each `owasp-*.json` has one row per held-out case: class, label, whether it was 
 
 Not included: the training examples, the teacher's raw answers and the adapter weights.
 The examples contain OWASP Benchmark source code, which is not redistributed here; `experiments/finetune/build_dataset.py` regenerates them.
+
+## `followup/` - E12 to E14 (real fixes, project map, repeats)
+
+Written by `experiments/followup/run.sh`; one file per configuration and seed.
+`realworld-` files are from `proofer eval-real`, `dvwa-` files from `eval-pairs`, and the rest are bakery runs from `eval`.
+A `-map` suffix means `--context map`.
+`scripts/summarise_runs.py results/followup/*.json` prints the tables.
+
+| File | Experiment | What it is |
+|---|---|---|
+| `realworld-none-patterns-walkthrough-20261003-150728.json` | E12 | Real fixes, own patterns, no model |
+| `realworld-none-semgrep-walkthrough-20261003-150923.json` | E12 | Real fixes, Semgrep on the same files |
+| `realworld-gemma4_26b-a4b-it-qat-judge-walkthrough-20261008-025126.json` | E12, E13, E14 | Real fixes, no map, seed 7 |
+| `gemma4_26b-a4b-it-qat-judge-walkthrough-20261008-031635.json` | E13, E14 | Bakery, no map, seed 7 |
+| `dvwa-gemma4_26b-a4b-it-qat-judge-walkthrough-20261008-033349.json` | E13, E14 | DVWA, no map, seed 7 |
+| `realworld-gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261008-052311.json` | E13 | Real fixes, map, seed 7 |
+| `gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261008-054947.json` | E13 | Bakery, map, seed 7 |
+| `dvwa-gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261008-060627.json` | E13 | DVWA, map, seed 7 |

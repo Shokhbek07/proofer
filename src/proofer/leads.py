@@ -17,6 +17,9 @@ from .workspace import Workspace, WorkspaceError
 CODE_EXT = {
     ".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".php", ".java", ".go",
     ".rb", ".cs", ".kt", ".rs", ".c", ".cc", ".cpp", ".h", ".sh",
+    # Templates, where many cross-site scripting fixes land.
+    ".html", ".htm", ".jinja", ".jinja2", ".j2", ".ejs", ".hbs", ".handlebars", ".twig",
+    ".vue", ".svelte", ".erb", ".pug",
 }
 CONFIG_NAMES = re.compile(
     r"(^|/)(Dockerfile[^/]*|docker-compose[^/]*\.ya?ml|compose\.ya?ml|\.env[^/]*|"
@@ -82,11 +85,14 @@ def _relevant(rel: str) -> bool:
     return ext in CODE_EXT or bool(CONFIG_NAMES.search(rel))
 
 
-def find_leads(ws: Workspace, limit: int | None = None) -> list[Lead]:
+def find_leads(
+    ws: Workspace, limit: int | None = None, paths: list[str] | None = None
+) -> list[Lead]:
+    """Leads for every relevant file, or only for `paths` when given."""
     leads: list[Lead] = []
-    for rel in ws.files():
-        if not _relevant(rel):
-            continue
+    for rel in paths if paths is not None else ws.files():
+        if paths is None and not _relevant(rel):
+            continue  # files named explicitly are reviewed whatever their type
         try:
             lines = ws.lines(rel)
         except WorkspaceError:

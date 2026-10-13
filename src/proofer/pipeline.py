@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import IO
 
 from .agent import dump_trace, investigate
+from .context import build_map
 from .external import ScannerError, same_place, semgrep_available, semgrep_findings
 from .findings import Check, Evidence, Finding, Tier
 from .judge import plain_wording, review_file
@@ -16,6 +17,7 @@ from .tools import Toolbox
 from .workspace import Workspace
 
 MODES = ("judge", "agent", "patterns", "semgrep")
+CONTEXTS = ("none", "map")
 
 
 @dataclass
@@ -25,6 +27,7 @@ class ScanResult:
     leads: int = 0
     seconds: float = 0.0
     prompt_tokens: int = 0
+    largest_prompt: int = 0
     completion_tokens: int = 0
     errors: list[str] = field(default_factory=list)
 
@@ -35,6 +38,7 @@ class ScanResult:
             "discarded_bad_citation": self.discarded,
             "seconds": round(self.seconds, 1),
             "prompt_tokens": self.prompt_tokens,
+            "largest_prompt_tokens": self.largest_prompt,
             "completion_tokens": self.completion_tokens,
             "errors": self.errors,
         }
@@ -100,16 +104,26 @@ def scan(
     strip_comments: bool = False,
     corroborate: bool = True,
     trust_boundary: bool = True,
+    context: str = "none",
+    only: list[str] | None = None,
 ) -> ScanResult:
+    """Review a repository.
+
+    `context="map"` adds a map of the whole repository to each file's prompt.
+    `only` limits the review to the given files; the map still covers everything.
+    """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}")
+    if context not in CONTEXTS:
+        raise ValueError(f"context must be one of {CONTEXTS}")
     say = progress or (lambda _msg: None)
     if mode == "semgrep":
-        result = ScanResult(findings=_dedupe(semgrep_findings(ws)))
+        result = ScanResult(findings=_dedupe(semgrep_findings(ws, paths=only)))
         _assign_tiers(result.findings, None)
         return result
-    leads = find_leads(ws, max_leads)
+    leads = find_leads(ws, max_leads, paths=only)
     result = ScanResult(leads=len(leads))
+    project = build_map(ws) if context == "map" and mode == "judge" else None
     collected: list[Finding] = []
 
     for i, lead in enumerate(leads, start=1):
@@ -119,11 +133,13 @@ def scan(
         assert client is not None, "a model client is required for this mode"
         say(f"[{i}/{len(leads)}] {lead.path}")
         if mode == "judge":
-            review = review_file(client, ws, lead, variant, strip_comments, trust_boundary)
+            extra = project.render(ws, lead.path) if project else ""
+            review = review_file(client, ws, lead, variant, strip_comments, trust_boundary, extra)
             collected += review.findings
             result.discarded += len(review.discarded)
             result.seconds += review.seconds
             result.prompt_tokens += review.prompt_tokens
+            result.largest_prompt = max(result.largest_prompt, review.largest_prompt)
             result.completion_tokens += review.completion_tokens
             if review.error:
                 result.errors.append(f"{lead.path}: {review.error}")

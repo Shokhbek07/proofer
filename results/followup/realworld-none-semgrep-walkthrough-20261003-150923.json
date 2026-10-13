@@ -1,0 +1,1810 @@
+{
+  "summary": {
+    "target": "realworld",
+    "model": "none",
+    "backend": "ollama",
+    "mode": "semgrep",
+    "prompt": "walkthrough",
+    "context": "none",
+    "temperature": 0.0,
+    "repeats": 1,
+    "items": 24,
+    "detected": 2.0,
+    "detected_at_change": 1.0,
+    "fixed_flagged": 1.0,
+    "pair_accuracy": 0.042,
+    "other_findings_vulnerable": 10.0,
+    "other_findings_fixed": 9.0,
+    "errors": 0.0,
+    "seconds_per_run": 0.0,
+    "detected_per_run": [
+      2
+    ],
+    "pair_correct_per_run": [
+      1
+    ]
+  },
+  "runs": [
+    {
+      "seed": 7,
+      "items": [
+        {
+          "id": "atomic-agents-stack",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "mistune",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "n8n-node-sqlite3",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "feathers",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "weblate",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "insecure-hash-algorithm-sha1",
+              "cwe": "CWE-327",
+              "severity": "medium",
+              "summary": "Detected SHA1 hash algorithm which is considered insecure. SHA1 is not collision resistant and is therefore not suitable as a cryptographic signature. Use SHA256 or SHA3 instead.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "weblate/vcs/base.py",
+                  "start_line": 566,
+                  "end_line": 566,
+                  "quote": "        objhash = hashlib.sha1(usedforsecurity=False)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "insecure-hash-algorithm-sha1",
+              "cwe": "CWE-327",
+              "severity": "medium",
+              "summary": "Detected SHA1 hash algorithm which is considered insecure. SHA1 is not collision resistant and is therefore not suitable as a cryptographic signature. Use SHA256 or SHA3 instead.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "weblate/vcs/base.py",
+                  "start_line": 569,
+                  "end_line": 569,
+                  "quote": "        objhash = hashlib.sha1(usedforsecurity=False)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hono",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "taipy",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "pyjwt",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "dynamic-urllib-use-detected",
+              "cwe": "CWE-939",
+              "severity": "medium",
+              "summary": "Detected a dynamic value being used with urllib. urllib supports 'file://' schemes, so a dynamic value controlled by a malicious actor may allow them to read arbitrary files. Audit uses of urllib calls to ensure user data cannot control the URLs, or consider using the 'requests' library instead.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "jwt/jwks_client.py",
+                  "start_line": 118,
+                  "end_line": 120,
+                  "quote": "            with urllib.request.urlopen(\n                r, timeout=self.timeout, context=self.ssl_context\n            ) as response:",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'may'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "flowise",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "cyberchef",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "ghost",
+          "detected": true,
+          "detected_at_change": false,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 5,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 7,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 99,
+                  "end_line": 99,
+                  "quote": "            const resolvedTargetDir = path.resolve(targetDir);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 104,
+                  "end_line": 104,
+                  "quote": "                resolvedBase = path.resolve(this.storagePath, targetDir);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 114,
+                  "end_line": 114,
+                  "quote": "            resolvedPath = path.resolve(resolvedBase, normalizedFileName);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 176,
+                  "end_line": 176,
+                  "quote": "        const storagePath = path.join(this.storagePath, this._normalizeStorageRelativePath(targetPath));",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 304,
+                  "end_line": 304,
+                  "quote": "        const targetPath = path.join(this.storagePath, normalizedPath);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 99,
+                  "end_line": 99,
+                  "quote": "            const resolvedTargetDir = path.resolve(targetDir);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 104,
+                  "end_line": 104,
+                  "quote": "                resolvedBase = path.resolve(this.storagePath, targetDir);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 114,
+                  "end_line": 114,
+                  "quote": "            resolvedPath = path.resolve(resolvedBase, normalizedFileName);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 146,
+                  "end_line": 146,
+                  "quote": "        const expectedPrefix = path.join(path.resolve(targetDir), '/');",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 147,
+                  "end_line": 147,
+                  "quote": "        if (!path.resolve(targetFilename).startsWith(expectedPrefix)) {",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 183,
+                  "end_line": 183,
+                  "quote": "        const storagePath = path.join(this.storagePath, this._normalizeStorageRelativePath(targetPath));",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F007",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "ghost/core/core/server/adapters/storage/LocalStorageBase.ts",
+                  "start_line": 311,
+                  "end_line": 311,
+                  "quote": "        const targetPath = path.join(this.storagePath, normalizedPath);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "django-haystack",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": false,
+          "pair_correct": true,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "eval-detected",
+              "cwe": "CWE-95",
+              "severity": "medium",
+              "summary": "Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this content can be input from outside the program, this may be a code injection vulnerability. Ensure evaluated content is not definable by external sources.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 865,
+                  "end_line": 865,
+                  "quote": "            converted_value = eval(value)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'may'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "lemur",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "fastify",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "fuxa",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 8,
+          "other_findings_fixed": 8,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 8,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 8,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "express-check-csurf-middleware-usage",
+              "cwe": "CWE-352",
+              "severity": "medium",
+              "summary": "A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your routes with a token or cookies.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/api/command/index.js",
+                  "start_line": 21,
+                  "end_line": 21,
+                  "quote": "        var commandApp = express();",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 29,
+                  "end_line": 29,
+                  "quote": "    const userDir = path.join(settings.workDir, 'node-red');",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 56,
+                  "end_line": 56,
+                  "quote": "                getTag: require(path.join(settings.appDir, 'runtime/devices')).getTagValue,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 57,
+                  "end_line": 57,
+                  "quote": "                setTag: require(path.join(settings.appDir, 'runtime/devices')).setTagValue,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 58,
+                  "end_line": 58,
+                  "quote": "                getDaq: require(path.join(settings.appDir, 'runtime/storage/daqstorage')).getNodeValues,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 59,
+                  "end_line": 59,
+                  "quote": "                getTagId: require(path.join(settings.appDir, 'runtime/devices')).getTagId,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F007",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 60,
+                  "end_line": 60,
+                  "quote": "                getHistoricalTags: require(path.join(settings.appDir, 'runtime/devices')).getHistoricalTags,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F008",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 279,
+                  "end_line": 279,
+                  "quote": "            res.sendFile(path.join(settings.httpStatic, 'index.html'));",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "express-check-csurf-middleware-usage",
+              "cwe": "CWE-352",
+              "severity": "medium",
+              "summary": "A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your routes with a token or cookies.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/api/command/index.js",
+                  "start_line": 21,
+                  "end_line": 21,
+                  "quote": "        var commandApp = express();",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 29,
+                  "end_line": 29,
+                  "quote": "    const userDir = path.join(settings.workDir, 'node-red');",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 56,
+                  "end_line": 56,
+                  "quote": "                getTag: require(path.join(settings.appDir, 'runtime/devices')).getTagValue,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 57,
+                  "end_line": 57,
+                  "quote": "                setTag: require(path.join(settings.appDir, 'runtime/devices')).setTagValue,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F005",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 58,
+                  "end_line": 58,
+                  "quote": "                getDaq: require(path.join(settings.appDir, 'runtime/storage/daqstorage')).getNodeValues,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F006",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 59,
+                  "end_line": 59,
+                  "quote": "                getTagId: require(path.join(settings.appDir, 'runtime/devices')).getTagId,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F007",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 60,
+                  "end_line": 60,
+                  "quote": "                getHistoricalTags: require(path.join(settings.appDir, 'runtime/devices')).getHistoricalTags,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F008",
+              "title": "path-join-resolve-traversal",
+              "cwe": "CWE-22",
+              "severity": "medium",
+              "summary": "Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.",
+              "reasoning": "",
+              "remediation": "",
+              "evidence": [
+                {
+                  "path": "server/integrations/node-red/index.js",
+                  "start_line": 278,
+                  "end_line": 278,
+                  "quote": "            res.sendFile(path.join(settings.httpStatic, 'index.html'));",
+                  "role": "sink"
+                }
+              ],
+              "origin": "semgrep",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'possible'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "directus",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "sentry",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "budibase",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "better-auth",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "airflow",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "vendure",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "thumbor",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "jupyterhub",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "mcp-python-sdk",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 0,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 0.0,
+            "prompt_tokens": 0,
+            "largest_prompt_tokens": 0,
+            "completion_tokens": 0,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        }
+      ]
+    }
+  ]
+}

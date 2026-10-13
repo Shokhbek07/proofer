@@ -9,7 +9,7 @@ RUN="uv run --group finetune"
 LOG=runs/finetune
 mkdir -p "$LOG"
 
-. experiments/finetune/lib.sh
+. experiments/lib.sh
 
 stage "train"
 need_free 60

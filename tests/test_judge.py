@@ -3,7 +3,14 @@
 import json
 
 from proofer.findings import Evidence, Finding
-from proofer.judge import build_prompt, has_dataflow, imported_names, review_file
+from proofer.judge import (
+    build_prompt,
+    has_dataflow,
+    helper_definitions,
+    imported_names,
+    review_file,
+    windows,
+)
 from proofer.leads import find_leads
 from proofer.llm import ChatResult, GenerationError
 from proofer.workspace import Workspace
@@ -146,3 +153,41 @@ def test_one_aborted_generation_is_an_error_for_that_file(tmp_path):
     review = review_file(Aborting(), ws, lead_for(ws, "views.py"))
     assert review.findings == []
     assert "repeat limit" in review.error
+
+
+def test_windows_cover_a_long_file_with_overlap():
+    assert windows(120) == [(1, 120)]
+    assert windows(0) == [(1, 1)]
+    spans = windows(900, size=400, overlap=40)
+    assert spans == [(1, 400), (361, 760), (721, 900)]
+
+
+def test_long_file_is_reviewed_in_parts_with_original_line_numbers(tmp_path):
+    body = [f"x{n} = {n}" for n in range(1, 1000)]
+    body[849] = "os.system('ping ' + request.args['host'])"
+    (tmp_path / "big.py").write_text("\n".join(body) + "\n")
+    ws = Workspace(tmp_path)
+    lead = lead_for(ws, "big.py")
+    client = Scripted(json.dumps({"findings": [{
+        "title": "t", "cwe": "CWE-78", "severity": "high", "summary": "s",
+        "reasoning": "r", "remediation": "m",
+        "evidence": [{"path": "big.py", "start_line": 850, "end_line": 850,
+                      "quote": "os.system('ping ' + request.args['host'])", "role": "sink"}],
+    }]}))
+    review = review_file(client, ws, lead)
+    assert len(client.calls) == len(windows(999)) == 3
+    last_prompt = client.calls[-1]["messages"][1]["content"]
+    assert "this part shows lines 721 to 999" in last_prompt
+    assert "850| os.system('ping ' + request.args['host'])" in last_prompt
+    # The same finding came back from every part; each copy verifies, and the
+    # pipeline merges duplicates by place and class.
+    assert len(review.findings) == 3 and review.error == ""
+
+
+def test_helper_lookup_tells_apart_names_that_share_a_prefix(tmp_path):
+    (tmp_path / "a.py").write_text("def get_user(uid):\n    return uid\n")
+    (tmp_path / "b.js").write_text("const get = (k) => k;\nconst getter = 1;\n")
+    (tmp_path / "view.py").write_text("from .a import get, get_user\n")
+    text = helper_definitions(Workspace(tmp_path), "view.py", ["from .a import get, get_user"])
+    assert "--- b.js (definition of get) ---\n1| const get = (k) => k;" in text
+    assert "--- a.py (definition of get_user) ---" in text

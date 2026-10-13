@@ -63,7 +63,28 @@ scripts/fetch_dvwa.sh
 uv run proofer eval-pairs --model gemma4:26b-a4b-it-qat --prompt walkthrough
 ```
 
-Baselines that need no model: `--mode patterns` and `--mode semgrep` work with both commands.
+Score it on real security fixes: 24 GitHub advisories published after the model was released, each reviewed before and after its fix (`bench/truth/realworld.yaml`).
+The fetch script downloads each project at the fix commit and its parent, about 3 GB, and only reads it as text; nothing in it is run.
+
+```bash
+uv run python scripts/fetch_realworld.py
+```
+
+```bash
+uv run proofer eval-real --model gemma4:26b-a4b-it-qat
+```
+
+`scripts/select_realworld.py` repeats the selection from the GitHub Advisory Database; it needs the `gh` command line tool.
+
+Baselines that need no model: `--mode patterns` and `--mode semgrep` work with all three evaluation commands.
+
+Other options:
+
+- `--context map` adds a map of the whole repository to each file's prompt: entry points, the protections they use, and definitions from other files (E13).
+- `--temperature 0.7 --seed 7` samples instead of decoding greedily; repeat `k` of an evaluation uses seed `7 + k`.
+- `scan --files PATH ...` reviews only the given files.
+- `scripts/summarise_runs.py RESULT.json ...` turns repeated runs into mean, minimum and maximum per metric.
+- `experiments/followup/run.sh` runs E12 to E14, one configuration and seed per stage.
 
 ## Fine-tuning experiment
 
