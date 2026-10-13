@@ -406,6 +406,28 @@ The plan was reordered to do the stability, independent-target and baseline chec
 - The analysis-first prompt and the two E7 fixes were written after seeing results; DVWA was clean for the first comparison only.
 - Timing numbers from 2026-10-03 may include slowdown from an unrelated process (section 8).
 
+### 7.6 Limits of the device
+
+Everything ran on one laptop: an Apple M4 Pro with 24 GB of unified memory shared by the CPU, the GPU, macOS and Docker.
+That limit shaped the design more than any other constraint.
+
+- **Model size.** Gemma 4 26B-A4B uses 15.8 GB when loaded (measured).
+  The next step up, Qwen3.8-27B, did not fit: Ollama put 15 percent of it on the CPU, swap grew to 20 GB, and it was five to six times slower for the same accuracy (E8).
+  Models of 70B parameters and above are out of reach, so the design compensates with grounding and verification instead of a stronger model.
+- **One model at a time.** With Docker stopped the machine idles at about 74 percent free memory, and one loaded Gemma brings that to about 10 percent.
+  A second model as a judge, an ensemble, or parallel reviews cannot run, and trying to load three models at once caused the kernel panic in section 8.
+- **Docker competes for the same memory.** Its VM takes up to about 19.5 GB, so lab containers and the model cannot run comfortably together.
+  This is one more obstacle for the `confirmed` tier, which would run a lab container while the model works.
+- **Context length.** Reviews use a 16,384-token context with 4,096 tokens kept for the answer, because a longer context costs memory the model needs.
+  So files are reviewed one at a time, long files in 400-line windows, and other files reach the model only as helper definitions or the project map.
+  The largest real-code prompt measured 10,803 tokens, inside the limit.
+- **Fine-tuning.** LoRA training of the 9B student ran out of memory at every standard setting.
+  The exact gradient through its recurrent layers would need about 300 GB, so a truncated gradient was used, and the tuned model is a product of that approximation (E11).
+- **Speed, and therefore sample size.** A bakery scan takes about 4 to 12 minutes, one pass over the 24 real fixes about 100 minutes, and one seed of the E12 to E14 batch about 4 hours 40 minutes.
+  The five pre-registered seeds need about 23 hours of exclusive use of the machine, which is why most results are single runs (section 7.5).
+
+What more memory would change: running a larger model or a second model as a check, longer contexts so related files are reviewed together, and enough repeats for every result to carry a spread.
+
 ## 8. The machine crash on 2026-10-03
 
 **What happened.** At 08:00:43 the laptop had a kernel panic and rebooted at 08:00:57.
@@ -437,6 +459,7 @@ The code fix written seconds before the crash, the step-600 adapter (checksum ch
 **What changed.**
 
 - The experiment scripts check free memory before each stage (60 percent for an MLX stage, 75 percent before loading Gemma) and stop if it is not available (`experiments/lib.sh`).
+  For the E12 to E14 batch the Gemma gate was lowered to 68 percent, because with Docker stopped the machine idles at about 74 percent and a 75 percent gate could never pass; 68 percent still blocks a second large model or a running Docker VM.
 - Gemma is unloaded from Ollama as soon as its stage ends.
 - The README warns against loading other large models while the experiment runs.
 - The interrupted work (the step-600 evaluation and the teacher's held-out run) was rerun from the start, 09:15 to 10:23, with nothing else loaded.
