@@ -1,0 +1,1966 @@
+{
+  "summary": {
+    "target": "realworld",
+    "model": "gemma4:26b-a4b-it-qat",
+    "backend": "ollama",
+    "mode": "judge",
+    "prompt": "walkthrough",
+    "context": "none",
+    "temperature": 0.7,
+    "repeats": 1,
+    "items": 24,
+    "detected": 6.0,
+    "detected_at_change": 6.0,
+    "fixed_flagged": 4.0,
+    "pair_accuracy": 0.167,
+    "other_findings_vulnerable": 10.0,
+    "other_findings_fixed": 6.0,
+    "errors": 0.0,
+    "seconds_per_run": 1729.6,
+    "detected_per_run": [
+      6
+    ],
+    "pair_correct_per_run": [
+      4
+    ]
+  },
+  "runs": [
+    {
+      "seed": 8,
+      "items": [
+        {
+          "id": "atomic-agents-stack",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": false,
+          "pair_correct": true,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 37.3,
+            "prompt_tokens": 3324,
+            "largest_prompt_tokens": 3324,
+            "completion_tokens": 828,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 17.2,
+            "prompt_tokens": 4524,
+            "largest_prompt_tokens": 4524,
+            "completion_tokens": 404,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Path Traversal via Agent Name and Static File Paths",
+              "cwe": "CWE-22",
+              "severity": "high",
+              "summary": "The `do_GET` method in `DashboardHandler` is vulnerable to path traversal. An attacker can provide a malicious `path` that includes `..` sequences to access files outside of the intended directories.",
+              "reasoning": "The `do_GET` method processes several paths using untrusted input from `self.path` without sufficient validation or sanitization:\n\n1.  **Agent Name Path Traversal (Lines 66-68):** \n    ```python\n    if path.startswith(\"/agents/\"):\n        agent_name = path[len(\"/agents/\"):].rstrip(\")\n        self._serve_file(self.agents_root / agent_name / \"dashboard.html\", \"text/html\")\n        return\n    ```\n    The `agent_name` is taken directly from the URL. A request to `/agents/../../etc/passwd` would result in a path like `self.agents_root / \"../../etc/passwd\" / \"dashboard.html\"`. While the `.html` suffix might prevent reading sensitive system files directly, it still allows for directory traversal to access other files within the `agents_root` or subdirectories if the attacker can control the suffix",
+              "remediation": "Sanitize the `agent_name` and `path` inputs to ensure they do not contain `..` or start with `/`. Use `Path.resolve()` and verify that the resulting path is a child of the intended directory (`agents_root` or `agents_root / \"_dashboard\"`).",
+              "evidence": [
+                {
+                  "path": "atomic_agents/dashboard/serve.py",
+                  "start_line": 72,
+                  "end_line": 73,
+                  "quote": "if path.startswith(\"/_dashboard/\"):\n            file_path = self.agents_root / path.lstrip(\"/\")",
+                  "role": "source"
+                },
+                {
+                  "path": "atomic_agents/dashboard/serve.py",
+                  "start_line": 79,
+                  "end_line": 80,
+                  "quote": "candidate = self.agents_root / \"_dashboard\" / path.lstrip(\"/\")\n        if candidate.exists() and candidate.is_file():",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "atomic_agents/dashboard/serve.py: quote not found in atomic_agents/dashboard/serve.py; 1 unverifiable or duplicate citations removed"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'might'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "mistune",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": false,
+          "pair_correct": true,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 34.3,
+            "prompt_tokens": 3914,
+            "largest_prompt_tokens": 3914,
+            "completion_tokens": 1201,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 11.8,
+            "prompt_tokens": 4101,
+            "largest_prompt_tokens": 4101,
+            "completion_tokens": 126,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Cross-Site Scripting (XSS) via unescaped text in various block and inline elements",
+              "cwe": "CWE-79",
+              "severity": "high",
+              "summary": "Several rendering methods in `HTMLRenderer` return user-provided text wrapped in HTML tags without performing any escaping or sanitization. An attacker can provide Markdown that renders into these elements, allowing them to inject arbitrary HTML/JavaScript.",
+              "reasoning": "The following methods do not escape the `text` parameter: `emphasis` (line 70), `strong` (line 73), `link` (line 79), `paragraph` (line 104), `heading` (line 112), `block_text` (line 121), `list_item` (line 153). While `link` escapes the URL and `image` strips tags from the alt text, the actual text content within the tags remains unescaped.",
+              "remediation": "All methods that render user-controlled text should ensure the text is escaped (e.g., using `escape_text`) before being concatenated into the HTML output, unless the method is explicitly intended to support raw HTML (like `inline_html` with `_escape=False`).",
+              "evidence": [
+                {
+                  "path": "src/mistune/renderers/html.py",
+                  "start_line": 70,
+                  "end_line": 70,
+                  "quote": "return \"<em>\" + text + \"</em>\"",
+                  "role": "sink"
+                },
+                {
+                  "path": "src/mistune/renderers/html.py",
+                  "start_line": 73,
+                  "end_line": 73,
+                  "quote": "return \"<strong>\" + text + \"</strong>\"",
+                  "role": "sink"
+                },
+                {
+                  "path": "src/mistune/renderers/html.py",
+                  "start_line": 104,
+                  "end_line": 104,
+                  "quote": "return \"<p>\" + text + \"</p>\\n\"",
+                  "role": "sink"
+                },
+                {
+                  "path": "src/mistune/renderers/html.py",
+                  "start_line": 153,
+                  "end_line": 153,
+                  "quote": "return \"<li>\" + text + \"</li>\\n\"",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "n8n-node-sqlite3",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 3,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 3,
+            "discarded_bad_citation": 0,
+            "seconds": 41.0,
+            "prompt_tokens": 4230,
+            "largest_prompt_tokens": 4230,
+            "completion_tokens": 1672,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 25.2,
+            "prompt_tokens": 4243,
+            "largest_prompt_tokens": 4243,
+            "completion_tokens": 807,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "SQL Injection via direct query execution",
+              "cwe": "CWE-89",
+              "severity": "high",
+              "summary": "The node allows executing arbitrary SQL queries. While it provides parameterization support via `all` and `run` methods, the `exec` method (line 92) and the `SELECT` logic (lines 230-233) allow executing arbitrary, potentially multi-statement SQL queries directly from the `query` parameter. An attacker can inject malicious SQL commands to bypass logic or manipulate the database.",
+              "reasoning": "The `query` parameter is taken from user input (line 194) and passed to `db.exec(query)` (line 92) when the `query_type` is not `SELECT`, `INSERT`, `UPDATE`, or `DELETE` (e.g., `CREATE` or `AUTO` that resolves to `CREATE`). Additionally, for `SELECT` queries, the code splits the query by `;` (line 230) and executes each part, allowing multiple statements to be executed.",
+              "remediation": "Restrict the allowed `QueryType` to only those that do not support multi-statements, or ensure that all queries are parsed and validated to prevent multiple statement execution. For `exec`, ensure the input is strictly controlled or replaced by parameterized versions of `run`.",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 92,
+                  "end_line": 92,
+                  "quote": "db.exec(query);",
+                  "role": "sink"
+                },
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 230,
+                  "end_line": 233,
+                  "quote": "const queries = query.split(';').filter((q) => q.trim() !== '');\n\t\t\t\tresults = queries.length > 1\n\t\t\t\t\t? await Promise.all(queries.map((q) => all(db, q, filterArgs(q, args))))\n\t\t\t\t\t: all(db, query, filterArgs(query, args));",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'potentially'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "Arbitrary file creation/access via `db_path`",
+              "cwe": "CWE-42",
+              "severity": "medium",
+              "summary": "The `db_path` parameter is used to instantiate a `better-sqlite3` database. The code attempts to create the directory path if it doesn't exist (lines 211), which can be used to create arbitrary directories or write to existing files depending on the process permissions.",
+              "reasoning": "The `db_path` is taken directly from user input (line 193) and passed to the `Database` constructor (line 224). The application also performs `fs.mkdirSync(dir, { recursive: true })` (line 211) based on this path, allowing an attacker to create directory structures on the filesystem.",
+              "remediation": "Validate the `db_path` against an allowlist of directories or ensure the node runs in a highly restricted sandbox where it can only access a specific designated data directory.",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 193,
+                  "end_line": 193,
+                  "quote": "const dbPath = this.getNodeParameter('db_path', itemIndex, '') as string;",
+                  "role": "source"
+                },
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 211,
+                  "end_line": 211,
+                  "quote": "if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });",
+                  "role": "sink"
+                },
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 224,
+                  "end_line": 224,
+                  "quote": "const db = new Database(dbPath, bindings);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "Arbitrary native binding loading",
+              "cwe": "CWE-427",
+              "severity": "high",
+              "summary": "The `use_custom_bindings` option allows a user to specify a file path to a custom native binding for `better-sqlite3`. This can lead to arbitrary code execution if an attacker can provide a path to a malicious shared object file.",
+              "reasoning": "The `use_custom_bindings` parameter (line 179) is used in `getBindings` (line 68) to return a `nativeBinding` option which is then passed to the `Database` constructor (line 224). While there is a check for `fs.existsSync`, this does not prevent loading a malicious file if the attacker can upload or point to one.",
+              "remediation": "Remove the ability to specify custom native bindings in a production environment, or strictly allowlist the paths from which bindings can be loaded.",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 178,
+                  "end_line": 181,
+                  "quote": "name: 'use_custom_bindings',\n\t\t\t\t\t\t\t\t\t\t\ttype: 'string',\n\t\t\t\t\t\t\t\t\t\t\tdefault: binaryPath,\n\t\t\t\t\t\t\t\t\t\t\t\tdescription: 'Whether you want to provide your own better-sqlite3 bindings',",
+                  "role": "source"
+                },
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 68,
+                  "end_line": 68,
+                  "quote": "return { nativeBinding: opts.use_custom_bindings };",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "nodes/SqliteNode/v1/SqliteV1.node.ts: lines corrected from 179-181"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'if an attacker'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "SQL Injection via `exec` function",
+              "cwe": "CWE-89",
+              "severity": "high",
+              "summary": "The `exec` function in the `SqliteV1` node executes raw SQL queries without parameterization. This is triggered when the `query_type` is set to `AUTO` (which can be the default) or `CREATE`. An attacker can provide a crafted query to execute arbitrary SQL commands, potentially leading to data theft, modification, or deletion of the entire database.",
+              "reasoning": "In `nodes/SqliteNode/v1/SqliteV1.node.ts`:\n\n```typescript\n238| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 results = exec(db, query);\n```\n\nWhen `queryType` is not `SELECT`, `INSERT`, `UPDATE`, or `DELETE`, the code calls `exec(db, query)`. The `exec` function (lines 91-94) performs `db.exec(query)`, which is a method in `better-sqlite3` specifically designed to execute one or more SQL statements, but it does not support parameter binding. Since `query` is directly sourced from the user input (line 195) and can be any string, this allows for arbitrary SQL injection.",
+              "remediation": "Avoid using `db.exec()` for user-provided input. If multiple statements are required, they should be parsed and executed individually using prepared statements with parameters. If `AUTO` detection is necessary, ensure that the detected query type is strictly validated and that only `SELECT` statements are allowed to bypass parameterization, or enforce parameterization for all queries.",
+              "evidence": [
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 91,
+                  "end_line": 94,
+                  "quote": "function exec(db: BetterSqlite3Database, query: string): { message: string } {\n\tdb.exec(query);\n\treturn { message: 'Query executed successfully.' };\n}",
+                  "role": "sink"
+                },
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 195,
+                  "end_line": 195,
+                  "quote": "let query = this.getNodeParameter('query', itemIndex, '') as string;",
+                  "role": "source"
+                },
+                {
+                  "path": "nodes/SqliteNode/v1/SqliteV1.node.ts",
+                  "start_line": 238,
+                  "end_line": 238,
+                  "quote": "results = exec(db, query);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'potentially'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "feathers",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 21.6,
+            "prompt_tokens": 1537,
+            "largest_prompt_tokens": 1537,
+            "completion_tokens": 947,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 10.3,
+            "prompt_tokens": 1603,
+            "largest_prompt_tokens": 1603,
+            "completion_tokens": 447,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Prototype Pollution via recursive merge",
+              "cwe": "CWE-132",
+              "severity": "high",
+              "summary": "The `_.merge` function recursively merges properties from a `source` object into a `target` object. It does not validate keys to ensure they are not internal properties like `__proto__` or `constructor`. An attacker providing a specially crafted `source` object can overwrite properties on `Object.prototype`, leading to Prototype Pollution.",
+              "reasoning": "In lines 76-88, the function iterates through the keys of the `source` object. If a key is `__proto__` or `constructor`, the subsequent `Object.assign(target, { [key]: {} })` (line 80) or `Object.assign(target, { [key]: source[key] })` (line 85) can modify the prototype of the target object or the global `Object.prototype` depending on the structure of the input.",
+              "remediation": "Validate that the keys being merged do not match sensitive property names such as `__proto__`, `constructor`, or `prototype` before performing the merge operation.",
+              "evidence": [
+                {
+                  "path": "packages/commons/src/index.ts",
+                  "start_line": 75,
+                  "end_line": 87,
+                  "quote": "  merge(target: any, source: any) {\n    if (_.isObject(target) && _.isObject(source)) {\n      Object.keys(source).forEach((key) => {\n        if (_.isObject(source[key])) {\n          if (!target[key]) {\n            Object.assign(target, { [key]: {} })\n          }\n\n          _.merge(target[key], source[key])\n        } else {\n          Object.assign(target, { [key]: source[key] })\n        }\n      })\n",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "packages/commons/src/index.ts: lines corrected from 75-90"
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "weblate",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": false,
+          "pair_correct": true,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 3,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 93.5,
+            "prompt_tokens": 28434,
+            "largest_prompt_tokens": 7508,
+            "completion_tokens": 1652,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 3,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 110.0,
+            "prompt_tokens": 29166,
+            "largest_prompt_tokens": 7593,
+            "completion_tokens": 2439,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Potential Path Traversal via Symlinks in `should_skip`",
+              "cwe": "CWE-22",
+              "severity": "low",
+              "summary": "The `should_skip` function uses `os.path.abspath` to validate that a location is within the `WEBLATE_DIR` and not in any restricted directories. If `location` is a path that points to a sensitive file via a symbolic link, `os.path.abspath` will return the path of the symlink itself, which might pass the check, even though the symlink points to a restricted location. Using `os.path.realpath` would be more secure as it resolves all symbolic links.",
+              "reasoning": "The function uses `os.path.abspath(location)` on line 81. `os.path.abspath` does not resolve symbolic links, whereas `os.path.realpath` does. If an attacker can create a symbolic link within `WEBLATE_DIR` that points to a sensitive directory (like `settings.DATA_DIR`), `should_skip` might return `False` (allowing the path), even though the path resolves to a restricted location.",
+              "remediation": "Use `os.path.realpath(location)` instead of `os.path.abspath(location)` to ensure all symbolic links are resolved before performing the path validation checks.",
+              "evidence": [
+                {
+                  "path": "weblate/utils/files.py",
+                  "start_line": 81,
+                  "end_line": 81,
+                  "quote": "location = os.path.abspath(location)",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'might'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Potential Server-Side Template Injection (SSTI) via regex capture groups",
+              "cwe": "CWE-94",
+              "severity": "high",
+              "summary": "The `ComponentDiscovery.matched_components` method (lines 285-314) uses `render_template` to generate component names (`name`), base file paths (`base_file`), new base paths (`new_base`), and intermediate paths (`intermediate`) using `**groups`. The `groups` dictionary contains data captured from user-provided regular expressions (specifically the `match` and `language_regex` parameters). If `render_template` uses a standard template engine like Jinja2 or Django Templates without sufficient sandboxing, an attacker who can control the regex pattern (e.g., via a component configuration) can use,",
+              "reasoning": "The `match` pattern is used to find files. The capture groups from this regex are passed as keyword arguments to `render_template` (lines 290, 295, 297). If a user can provide a regex like `(?P<name>{{7*7}})` or similar, and `render_template` evaluates these strings as templates, it leads to SSTI. While `ComponentDiscovery` seems to be part of a discovery process (often triggered by admin/system settings), the input `match` is part of the `DiscoveryKwargs` (line 75) which typically comes from user-provided configuration.",
+              "remediation": "Ensure that `render_template` does not allow arbitrary code execution and that the input used for template rendering is strictly validated or that template rendering is performed in a sandboxed environment that does not allow access to sensitive objects or functions.",
+              "evidence": [
+                {
+                  "path": "weblate/trans/discovery.py",
+                  "start_line": 290,
+                  "end_line": 296,
+                  "quote": "name = render_template(self.name_template, **groups)\n                    result[mask] = {\n                        \"files\": {path},\n                        \"languages\": {groups[\"language\"]},\n                        \"files_langs\": {(path, groups[\"language\"])},\n                        \"base_file\": render_template(self.base_file_template, **groups),\n                        \"new_base\": render_template(",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "weblate/trans/discovery.py: lines corrected from 290-303"
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "hono",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 43.5,
+            "prompt_tokens": 8406,
+            "largest_prompt_tokens": 5229,
+            "completion_tokens": 1210,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 49.3,
+            "prompt_tokens": 8953,
+            "largest_prompt_tokens": 5239,
+            "completion_tokens": 1344,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Arbitrary File Write via Unsanitized Output Directory",
+              "cwe": "CWE-42",
+              "severity": "high",
+              "summary": "The `toSSG` function uses `options.dir` to define the `outputDir` (line 421), which is then passed to `saveContentToFile` (line 444) to write files to the filesystem. Since `options.dir` is not validated or constrained to a specific directory, a caller can provide an arbitrary path (e.g., using `../` traversal or absolute paths), allowing the application to write files to sensitive locations on the filesystem.",
+              "reasoning": "The `outputDir` is derived directly from `options?.dir` without any path normalization, sanitization, or restriction to a safe base directory. This value is passed to `saveContentToFile`, which ultimately uses the `fs` module to perform write operations.",
+              "remediation": "Validate that `options.dir` is a sub-directory of a predefined, safe output directory. Use `path.resolve` and check that the resulting path starts with the intended base directory. Additionally, sanitize the `content` object to ensure filenames within `content` do not allow for directory traversal.",
+              "evidence": [
+                {
+                  "path": "src/helper/ssg/ssg.ts",
+                  "start_line": 421,
+                  "end_line": 421,
+                  "quote": "const outputDir = options?.dir ?? DEFAULT_OUTPUT_DIR",
+                  "role": "sink"
+                },
+                {
+                  "path": "src/helper/ssg/ssg.ts",
+                  "start_line": 444,
+                  "end_line": 444,
+                  "quote": "saveContentToFile(content, fs, outputDir, options?.extensionMap).catch((e) => e)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "taipy",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 44.3,
+            "prompt_tokens": 11841,
+            "largest_prompt_tokens": 7689,
+            "completion_tokens": 831,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 40.5,
+            "prompt_tokens": 11841,
+            "largest_prompt_tokens": 7689,
+            "completion_tokens": 783,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Potential XML External Entity (XXE) vulnerability",
+              "cwe": "CWE-611",
+              "severity": "high",
+              "summary": "The `Element._call_builder` method uses `xml.etree.ElementTree.fromstring` to parse the output of a user-defined `render_xhtml` function. If the `render_xhtml` function returns an XML string containing an external entity definition, it may lead to XXE vulnerabilities, such as local file disclosure or SSRF, depending on the underlying XML parser's configuration.",
+              "reasoning": "At line 185, `xml_root = etree.fromstring(xhtml)` is called on the string returned by `self._render_xhtml(attributes)`. The `xml.etree.ElementTree` module in the Python standard library is known to be vulnerable to XXE attacks if the XML input contains malicious DTDs or external entity references.",
+              "remediation": "Use a more secure XML parser that explicitly disables DTDs and external entity processing, such as `defusedxml.ElementTree.fromstring`.",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 185,
+                  "end_line": 185,
+                  "quote": "xml_root = etree.fromstring(xhtml)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'may'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Potential XML External Entity (XXE) vulnerability via custom element rendering",
+              "cwe": "CWE-61",
+              "severity": "high",
+              "summary": "The `Element._call_builder` method uses `xml.etree.ElementTree.fromstring` to parse the output of a user-provided `render_xhtml` function (line 185). `xml.etree.ElementTree` is not secure against maliciously constructed XML data and may be vulnerable to XXE attacks if the input string contains external entity references.",
+              "reasoning": "In `taipy/gui/extension/library.py`, line 185: `xml_root = etree.fromstring(xhtml)`. The variable `xhtml` comes from `self._render_xhtml(attributes)` (line 183). Since `Element` can be instantiated with a custom `render_xhtml` callable, the content of `xhtml` is under the control of the user/developer defining the element. If the `xml.etree.ElementTree` parser is configured or defaults to allowing external entities, an attacker could potentially perform XXE to read local files or perform SSRF.",
+              "remediation": "Use a secure XML parser that disables DTDs and external entity expansion, such as `defusedxml.ElementTree.fromstring` instead of `xml.etree.ElementTree.fromstring`.",
+              "evidence": [
+                {
+                  "path": "taipy/gui/extension/library.py",
+                  "start_line": 182,
+                  "end_line": 185,
+                  "quote": "if self._is_server_only():\n            xhtml = self._render_xhtml(attributes)\n            try:\n                xml_root = etree.fromstring(xhtml)",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "taipy/gui/extension/library.py: lines corrected from 183-185"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'may'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pyjwt",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 20.4,
+            "prompt_tokens": 5812,
+            "largest_prompt_tokens": 5812,
+            "completion_tokens": 404,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 20.6,
+            "prompt_tokens": 6002,
+            "largest_prompt_tokens": 6002,
+            "completion_tokens": 411,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "flowise",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 16.7,
+            "prompt_tokens": 4205,
+            "largest_prompt_tokens": 4205,
+            "completion_tokens": 421,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 20.1,
+            "prompt_tokens": 4902,
+            "largest_prompt_tokens": 4902,
+            "completion_tokens": 510,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "cyberchef",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": false,
+          "pair_correct": true,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 37.8,
+            "prompt_tokens": 3319,
+            "largest_prompt_tokens": 2363,
+            "completion_tokens": 1560,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 27.4,
+            "prompt_tokens": 3371,
+            "largest_prompt_tokens": 2377,
+            "completion_tokens": 1160,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Potential Prototype Pollution in `getSeriesValues`",
+              "cwe": "CWE-1322",
+              "severity": "medium",
+              "summary": "The `getSeriesValues` function uses untrusted input from the first column of the input data to set properties on an object (`series[serie]`). If the input contains a value like `__proto__`, it could lead to prototype pollution, potentially causing unexpected behavior or application crashes.",
+              "reasoning": "In `getSeriesValues` (lines 158-168):\n```javascript\n158|     values.forEach(row => {\n159|         const serie = row[0],\n160|             xVal = row[1],\n161|             val = parseFloat(row[2]);\n162| \n163|         if (Number.isNaN(val)) throw new OperationError(\"Values must be numbers in base 10.\");\n164| \n165|         xValues.add(xVal);\n166|         if (typeof series[serie] === \"undefined\") series[serie] = {};\n167|         series[serie][xVal] = val;\n168|     });\n```\nThe `serie` variable is derived from `row[0]` (untrusted input). If `serie` is `__proto__`, `series[serie]` refers to `Object.prototype`. While the code checks if `series[serie]` is undefined before initializing it, an attacker can still manipulate the prototype if they can bypass the `undefined` check or if the object is not a",
+              "remediation": "Use `Object.create(null)` to initialize the `series` object so it does not have a prototype, or use `Object.hasOwn()` to check for property existence, and validate/sanitize the `serie` key to ensure it does not match sensitive property names like `__proto__` or `constructor`.",
+              "evidence": [
+                {
+                  "path": "src/core/lib/Charts.mjs",
+                  "start_line": 156,
+                  "end_line": 166,
+                  "quote": "156|     const series = {};\n157| \n158|     values.forEach(row => {\n159|         const serie = row[0],\n160|             xVal = row[1],\n161|             val = parseFloat(row[2]);\n162| \n163|         if (Number.isNaN(val)) throw new OperationError(\"Values must be numbers in base 10.\");\n164| \n165|         xValues.add(xVal);\n166|         if (typeof series[serie] === \"undefined\") series[serie] = {};\n167|",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "src/core/lib/Charts.mjs: lines corrected from 156-168"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'could'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "Cross-Site Scripting (XSS) in objToTable",
+              "cwe": "CWE-79",
+              "severity": "high",
+              "summary": "The `objToTable` function constructs an HTML string by directly embedding object keys and values into the HTML output without any sanitization or encoding. If an object containing untrusted data (e.g., data from a network request or a user profile) is passed to this function, an attacker can inject malicious `<script>` tags or other HTML elements.",
+              "reasoning": "The function iterates through the keys and values of the input object and performs direct string concatenation: \nLine 32: `html += `<tr><td style='word-wrap: break-word'>${key}</td>`;` \nLine 36: `html += `<td>${obj[key]}</td>`;` \nThere is no evidence of HTML entity encoding or sanitization for `key` or `obj[key]` before they are included in the `html` string.",
+              "remediation": "Use a library to escape HTML entities (like `he` or `lodash.escape`) for both keys and values, or use DOM APIs to create elements rather than manual string concatenation.",
+              "evidence": [
+                {
+                  "path": "src/core/lib/Protocol.mjs",
+                  "start_line": 32,
+                  "end_line": 32,
+                  "quote": "html += `<tr><td style='word-wrap: break-word'>${key}</td>`;",
+                  "role": "sink"
+                },
+                {
+                  "path": "src/core/lib/Protocol.mjs",
+                  "start_line": 36,
+                  "end_line": 36,
+                  "quote": "html += `<td>${obj[key]}</td>`;",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Prototype Pollution via `getSeriesValues`",
+              "cwe": "CWE-1322",
+              "severity": "high",
+              "summary": "The `getSeriesValues` function is vulnerable to Prototype Pollution. It uses untrusted input from the first and second columns of the data to set properties on objects created via `Object.create(null)`. While the parent object `series` is safe from prototype pollution, the nested objects `series[serie]` are not protected against keys like `__proto__` or `constructor`. An attacker can provide a malicious payload to overwrite properties on `Object.prototype`.",
+              "reasoning": "In `getSeriesValues` (lines 159-167):\n```javascript\n159|         const serie = row[0],\n160|             xVal = row[1],\n161|             val = parseFloat(row[2]);\n162| \n163|         if (Number.isNaN(val)) throw new OperationError(\"Values must be numbers in base 10.\");\n164| \n165|         xValues.add(xVal);\n166|         if (typeof series[serie] === \"undefined\") series[serie] = Object.create(null);\n167|         series[serie][xVal] = val;\n```\nWhen `serie` is `__proto__`, `series[serie]` becomes `series['__proto__']`. Although `series` is created with `Object.create(null)`, `series['__proto__']` will point to the object's prototype if it exists, or create a new property. More importantly, if `series[serie]` is an existing object, `series[serie][xVal] = val` can be used to pollute the prototype.",
+              "remediation": "Validate that `serie` and `xVal` do not match sensitive keys like `__proto__` or `constructor`. Alternatively, use a `Map` instead of a plain object for `series[serie]` to avoid prototype-related vulnerabilities.",
+              "evidence": [
+                {
+                  "path": "src/core/lib/Charts.mjs",
+                  "start_line": 166,
+                  "end_line": 167,
+                  "quote": "if (typeof series[serie] === \"undefined\") series[serie] = Object.create(null);\n         series[serie][xVal] = val;",
+                  "role": "sink"
+                },
+                {
+                  "path": "src/core/lib/Charts.mjs",
+                  "start_line": 159,
+                  "end_line": 161,
+                  "quote": "const serie = row[0],\n             xVal = row[1],\n             val = parseFloat(row[2]);",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ghost",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 29.8,
+            "prompt_tokens": 6788,
+            "largest_prompt_tokens": 4508,
+            "completion_tokens": 760,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 31.1,
+            "prompt_tokens": 7005,
+            "largest_prompt_tokens": 4618,
+            "completion_tokens": 860,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "django-haystack",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 88.1,
+            "prompt_tokens": 25035,
+            "largest_prompt_tokens": 7644,
+            "completion_tokens": 1659,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 89.4,
+            "prompt_tokens": 24991,
+            "largest_prompt_tokens": 7604,
+            "completion_tokens": 1847,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Elasticsearch Query String Injection",
+              "cwe": "CWE-94",
+              "severity": "high",
+              "summary": "The `build_search_kwargs` method takes a `query_string` parameter and embeds it directly into an Elasticsearch `query_string` query (line 355). Because the `query_string` query in Elasticsearch is designed to parse complex, user-provided search syntax, an attacker can provide specially crafted strings to manipulate the search logic, potentially accessing data across different fields or bypassing intended search restrictions. While `haystack` often handles the construction of this string, any part of the search term passed from a user-facing search input to this method is subject to this risk.",
+              "reasoning": "The `query_string` parameter is used directly in the `kwargs` dictionary which is then passed to the Elasticsearch client. There is no sanitization or escaping of the `query_string` to prevent the injection of Elasticsearch query operators (like `OR`, `AND`, or field-specific searches) if the input is not strictly validated by the caller.",
+              "remediation": "Validate or sanitize the `query_string` before passing it to the backend, or use a more restrictive query type like `match` or `multi_match` if complex query syntax is not required by the application's design.",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 352,
+                  "end_line": 355,
+                  "quote": "                     \"query_string\": {\n                         \"default_field\": content_field,\n                         \"default_operator\": DEFAULT_OPERATOR,\n                         \"query\": query_string,",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'potentially'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "Arbitrary Code Execution via `eval()` on untrusted data",
+              "cwe": "CWE-95",
+              "severity": "critical",
+              "summary": "The `_to_python` method in `ElasticsearchSearchBackend` uses `eval()` on data retrieved from an Elasticsearch index. If an attacker can influence the data stored in the Elasticsearch index, they can achieve arbitrary code execution in the context of the application process.",
+              "reasoning": "The `value` passed to `_to_python` is sourced from `raw_result` in the backend (line 763), which comes from the Elasticsearch response. In line 865, `eval(value)` is called on this untrusted string. Although the code attempts to limit the impact by checking the type of `converted_value` (lines 868-871), the code execution occurs *during* the `eval()` call, before the type check is performed.",
+              "remediation": "Replace `eval()` with a safer alternative such as `ast.literal_eval()` which only evaluates literal structures (strings, numbers, tuples, lists, dicts, booleans, and None) and does not allow arbitrary code execution.",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 865,
+                  "end_line": 865,
+                  "quote": "             converted_value = eval(value)",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'If an attacker'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Elasticsearch Query String Injection",
+              "cwe": "CWE-94",
+              "severity": "medium",
+              "summary": "The `build_search_kwargs` method takes a `query_string` and passes it directly into an Elasticsearch `query_string` query. If the input is sourced from user-provided search terms, an attacker can inject Elasticsearch Query String syntax to manipulate the query logic, potentially bypassing filters or causing performance issues (DoS) via complex queries.",
+              "reasoning": "The `query_string` parameter is used directly in the `query_string` query block on line 356: `\"query\": query_string`. This allows a user to provide special characters and operators that define the logic of the search, which is a form of injection into the search engine's query language.",
+              "remediation": "Sanitize or escape the `query_string` to ensure special characters used for Elasticsearch query logic are treated as literal text, or use a more restricted query type that does not support complex syntax.",
+              "evidence": [
+                {
+                  "path": "haystack/backends/elasticsearch_backend.py",
+                  "start_line": 351,
+                  "end_line": 358,
+                  "quote": "351|             kwargs = {\n352|                 \"query\": {\n353|                     \"query_string\": {\n354|                         \"default_field\": content_field,\n355|                         \"default_operator\": DEFAULT_OPERATOR,\n356|                         \"query\": query_string,\n357|                         \"analyze_wildcard\": True,\n358|                         \"auto_generate_phrase_queries\": \n",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "haystack/backends/elasticsearch_backend.py: lines corrected from 351-363"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'potentially'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "lemur",
+          "detected": true,
+          "detected_at_change": true,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 2,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 3,
+            "findings": 4,
+            "discarded_bad_citation": 0,
+            "seconds": 85.9,
+            "prompt_tokens": 15498,
+            "largest_prompt_tokens": 5647,
+            "completion_tokens": 2653,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 3,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 68.9,
+            "prompt_tokens": 15615,
+            "largest_prompt_tokens": 5672,
+            "completion_tokens": 1765,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Missing ownership check (IDOR) in `Destinations.get`",
+              "cwe": "CWE-639",
+              "severity": "low",
+              "summary": "The `Destinations.get` method allows any authenticated user to retrieve any destination by its `destination_id` because it lacks a check to verify if the authenticated user has the authority to access that specific resource.",
+              "reasoning": "The endpoint `GET /destinations/<destination_id>` (lines 199-251) is protected by `AuthenticatedResource`, meaning any logged-in user can access it. However, it does not verify if the user has permission to access the specific `destination_id` requested, which could lead to an Insecure Direct Object Reference (IDOR) if destinations are intended to be private to certain users or organizations.",
+              "remediation": "Implement a check to ensure the authenticated user has the necessary permissions to access the specific `destination_id` before returning the data.",
+              "evidence": [
+                {
+                  "path": "lemur/destinations/views.py",
+                  "start_line": 193,
+                  "end_line": 209,
+                  "quote": "class Destinations(AuthenticatedResource):\n    def __init__(self):\n        self.reqparse = reqparse.RequestParser()\n        super().__init__()\n\n    @validate_schema(None, destination_output_schema)\n    def get(self, destination_id):\n        \"\"\"\n        .. http:get:: /destinations/1\n\n            Get a specific account\n\n            **Example request**:\n\n            .. sourcecode:: http\n\n\n\t\t\t\tGET /\t\t",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "lemur/destinations/views.py: lines corrected from 199-251"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'could'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "Missing ownership check (IDOR) in `CertificateDestinations.get`",
+              "cwe": "CWE-639",
+              "severity": "low",
+              "summary": "The `CertificateDestinations.get` method allows any authenticated user to retrieve destinations associated with any `certificate_id` because it lacks a check to verify if the authenticated user has the authority to access that specific certificate's destinations.",
+              "reasoning": "The endpoint `GET /certificates/<certificate_id>/destinations` (lines 361-361) is protected by `AuthenticatedResource`, meaning any logged-in user can access it. However, it does not verify if the authenticated user has permission to view the destinations associated with the provided `certificate_id`.",
+              "remediation": "Implement a check to ensure the authenticated user has the necessary permissions to access the specific `certificate_id` or its associated destinations.",
+              "evidence": [
+                {
+                  "path": "lemur/destinations/views.py",
+                  "start_line": 354,
+                  "end_line": 361,
+                  "quote": "class CertificateDestinations(AuthenticatedResource):\n    \"\"\" Defines the 'certificate/<int:certificate_id/destinations'' endpoint \"\"\"\n\n    def __init__(self):\n        super().__init__()\n\n    @validate_schema(None, destination_output_schema)\n    def get(self, certificate_id):",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F003",
+              "title": "Unvalidated 'metric' parameter in DestinationsStats.get",
+              "cwe": "CWE-20",
+              "severity": "low",
+              "summary": "The `metric` parameter in the `/destinations/stats` endpoint is taken directly from the user's query string and passed into `service.stats`. Without an allowlist of valid metrics, an attacker might trigger unintended logic or information leakage within the statistics service.",
+              "reasoning": "The line `args = self.reqparse.parse_args()` (line 436) captures the `metric` argument, and `service.stats(**args)` (line 437) uses it directly without any validation against a set of permitted values.",
+              "remediation": "Implement an allowlist of permitted metric names and validate the `metric` parameter against this list before passing it to the service layer.",
+              "evidence": [
+                {
+                  "path": "lemur/destinations/views.py",
+                  "start_line": 434,
+                  "end_line": 437,
+                  "quote": "def get(self):\n        self.reqparse.add_argument(\"metric\", type=str, location=\"args\")\n        args = self.reqparse.parse_args()\n        items = service.stats(**args)",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "lemur/destinations/views.py: lines corrected from 435-437"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'might'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F004",
+              "title": "Path Traversal in SFTP Destination",
+              "cwe": "CWE-22",
+              "severity": "high",
+              "summary": "The `destinationPath` and `privateKeyPath` options are used in filesystem/SFTP operations without sufficient validation or sanitization. An attacker with access to configure or modify destination options could potentially perform path traversal to read sensitive files (via `privateKeyPath` in `open_sftp_connection`) or overwrite/delete arbitrary files on the SFTP server (via `destinationPath` in `upload` or `upload_file`).",
+              "reasoning": "In `open_sftp_connection` (line 124), `ssh_priv_key` (derived from `privateKeyPath` option) is used directly as a file path. In `upload` (line 151), `dst_path` (derived from `destinationPath` option) is concatenated with `cn` (Common Name) to form `dst_path_cn`, which is then used in `upload_file` (line 166). In `upload_file` (line 269), `dst_path` and `filename` are joined to write files. If `destinationPath` contains path traversal sequences (e.g., `../../`), it could lead to arbitrary file writes on the target SFTP server. Similarly, if `privateKeyPath` is controlled by an attacker, they could potentially point it to a file they have access to on the Lemur server to attempt to use it via the SSH connection.",
+              "remediation": "Strictly validate and sanitize `destinationPath` and `privateKeyPath` to ensure they do not contain path traversal sequences (e.g., `..`). Use an allowlist of permitted directories or ensure they are resolved to a canonical path that is within an expected base directory.",
+              "evidence": [
+                {
+                  "path": "lemur/plugins/lemur_sftp/plugin.py",
+                  "start_line": 69,
+                  "end_line": 75,
+                  "quote": "        {\n            \"name\": \"privateKeyPath\",\n            \"type\": \"str\",\n            \"required\": False,\n            \"helpMessage\": \"The path to the RSA private key on the Lemur server (optional).\",\n            \"default\": None,\n        },",
+                  "role": "source"
+                },
+                {
+                  "path": "lemur/plugins/lemur_sftp/plugin.py",
+                  "start_line": 83,
+                  "end_line": 89,
+                  "quote": "        {\n            \"name\": \"destinationPath\",\n            \"type\": \"str\",\n            \"required\": True,\n            \"helpMessage\": \"The SFTP path where certificates will be uploaded.\",\n            \"default\": \"/etc/nginx/certs\",\n        },",
+                  "role": "source"
+                },
+                {
+                  "path": "lemur/plugins/lemur_sftp/plugin.py",
+                  "start_line": 124,
+                  "end_line": 126,
+                  "quote": "                pkey = paramiko.RSAKey.from_private_key_file(\n                    ssh_priv_key, ssh_priv_key_pass\n                )",
+                  "role": "sink"
+                },
+                {
+                  "path": "lemur/plugins/lemur_sftp/plugin.py",
+                  "start_line": 151,
+                  "end_line": 151,
+                  "quote": "        dst_path_cn = dst_path + \"/\" + cn",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "lemur/plugins/lemur_sftp/plugin.py: lines corrected from 70-75; lemur/plugins/lemur_sftp/plugin.py: lines corrected from 84-89"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'could'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Lack of authorization check in DestinationsStats.get",
+              "cwe": "CWE-285",
+              "severity": "low",
+              "summary": "The `DestinationsStats.get` endpoint allows any authenticated user to request statistics for any metric by providing a `metric` query parameter. There is no check to ensure that the user has the appropriate permissions to access the requested statistics or that the `metric` provided is valid.",
+              "reasoning": "The `DestinationsStats` class inherits from `AuthenticatedResource`, which only enforces authentication (`login_required`). The `get` method accepts a `metric` argument from the query string (`location=\"args\"`) and passes it directly into `service.stats(**args)` without any validation or authorization checks. An attacker could potentially probe for valid metric names or access sensitive statistical data by guessing metric identifiers.",
+              "remediation": "Implement authorization checks to ensure the authenticated user is permitted to view the requested statistics. Additionally, validate the `metric` input against an allowlist of valid metric names to prevent unexpected behavior in the service layer.",
+              "evidence": [
+                {
+                  "path": "lemur/destinations/views.py",
+                  "start_line": 437,
+                  "end_line": 441,
+                  "quote": "    def get(self):\n        self.reqparse.add_argument(\"metric\", type=str, location=\"args\")\n        args = self.reqparse.parse_args()\n        items = service.stats(**args)\n        return dict(items=items, total=len(items))",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'could'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "Path Traversal via Certificate Common Name",
+              "cwe": "CWE-22",
+              "severity": "high",
+              "summary": "The `upload` method uses the Common Name (CN) from the provided certificate to construct a file path. If a certificate is provided with a CN containing path traversal sequences (e.g., `../../etc/passwd`), it can lead to arbitrary file writes on the SFTP server.",
+              "reasoning": "In `upload` (lines 151-153), the `cn` is extracted from the `body` (the certificate). The `dst_path_cn` is constructed as `dst_path + \"/\" + cn`. This `dst_path_cn` is then passed to `upload_file` (line 168), which uses `path.join(dst_path, filename)` (line 271) where `filename` is derived from `cn`. Since `cn` is derived from untrusted certificate data and is not sanitized for path traversal characters, an attacker can control the file path on the remote server.",
+              "remediation": "Sanitize the Common Name (CN) extracted from the certificate to ensure it does not contain path traversal characters (like `..` or `/`) before using it to construct file paths.",
+              "evidence": [
+                {
+                  "path": "lemur/plugins/lemur_sftp/plugin.py",
+                  "start_line": 151,
+                  "end_line": 162,
+                  "quote": "cn = common_name(parse_certificate(body))\ndst_path = self.get_option(\"destinationPath\", options)\ndst_path_cn = dst_path + \"/\" + cn\nexport_format = self.get_option(\"exportFormat\", options)\n\n# prepare files for upload\nfiles = {cn + \".key\": private_key, cn + \".pem\": body}\n\nif cert_chain:\n    if export_format == \"NGINX\":\n        # assemble body + chain in the single file\n        files[cn + \".pem\"] +=\n",
+                  "role": "source"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "lemur/plugins/lemur_sftp/plugin.py: lines corrected from 151-168"
+                },
+                {
+                  "name": "wording",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fastify",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 14.0,
+            "prompt_tokens": 4307,
+            "largest_prompt_tokens": 4307,
+            "completion_tokens": 263,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 14.7,
+            "prompt_tokens": 4414,
+            "largest_prompt_tokens": 4414,
+            "completion_tokens": 175,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "fuxa",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 1,
+          "stats_vulnerable": {
+            "leads": 3,
+            "findings": 0,
+            "discarded_bad_citation": 1,
+            "seconds": 61.7,
+            "prompt_tokens": 12366,
+            "largest_prompt_tokens": 5085,
+            "completion_tokens": 1652,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 3,
+            "findings": 2,
+            "discarded_bad_citation": 0,
+            "seconds": 73.4,
+            "prompt_tokens": 12351,
+            "largest_prompt_tokens": 5085,
+            "completion_tokens": 2131,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Insecure Direct Object Reference (IDOR) in Tag Management",
+              "cwe": "CWE-639",
+              "severity": "low",
+              "summary": "The `/api/getTagValue` endpoint allows users (who may be authorized by a `sourceScriptName` but not an admin) to request any `tagId` provided in the `ids` query parameter. The application does not verify if the user has permission to access the specific tags requested, potentially allowing a user to iterate through tag IDs to discover system information.",
+              "reasoning": "The endpoint checks if a user is an admin OR if the `sourceScriptName` is authorized via `runtime.scriptsMgr.isAuthorisedByScriptName(req.query.sourceScriptName, permission)`. However, once authorized via a script name, the code proceeds to loop through any `tagId` provided in `req.query.ids` and returns its value via `runtime.devices.getTagValue(tagId, true)`. There is no check to verify that the specific `tagId` belongs to the scope of the `sourceScriptName` or the user's permissions.",
+              "remediation": "Implement fine-grained access control that validates whether the authenticated user or the specific `sourceScriptName` is permitted to access the requested `tagId`s.",
+              "evidence": [
+                {
+                  "path": "server/api/command/index.js",
+                  "start_line": 80,
+                  "end_line": 82,
+                  "quote": "else if (!authJwt.haveAdminPermission(permission) && !runtime.scriptsMgr.isAuthorisedByScriptName(req.query.sourceScriptName, permission)) {\n                 res.status(401).json({error:\"unauthorized_error\", message: \"Unauthorized!\"});\n                 runtime.logger.error(\"api get getTagValue: Unauthorized\");",
+                  "role": "source"
+                },
+                {
+                  "path": "server/api/command/index.js",
+                  "start_line": 85,
+                  "end_line": 85,
+                  "quote": "var tagsIds = JSON.parse(req.query.ids);",
+                  "role": "sink"
+                },
+                {
+                  "path": "server/api/command/index.js",
+                  "start_line": 91,
+                  "end_line": 91,
+                  "quote": "const value = runtime.devices.getTagValue(tagId, true);",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'may'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            },
+            {
+              "id": "F002",
+              "title": "Potential Arbitrary System Function Execution",
+              "cwe": "CWE-94",
+              "severity": "critical",
+              "summary": "The `runSysFunction` method (line 119) allows execution of system functions by name. If an attacker can control the `functionName` argument, they can execute sensitive `runtime` operations such as `$setTag` (line 234), `$setDeviceProperty` (line 242), or `$sendMessage` (line 244) with arbitrary parameters.",
+              "reasoning": "The `runSysFunction` function takes a `functionName` string and passes it directly to `scriptModule.runSysFunction`. Looking at `_getSystemFunctions` (lines 231-247), the keys in the `sysFncs` object correspond to powerful system capabilities. While the script execution itself might be sandboxed, if `runSysFunction` is exposed to an untrusted caller (like a frontend request that bypasses `isAuthorised`), it leads to arbitrary command execution within the runtime context.",
+              "remediation": "Ensure that `runSysFunction` is only callable by trusted internal components or implement a strict allowlist of functions that can be called by user-provided input, rather than allowing any key from the `sysFncs` map.",
+              "evidence": [
+                {
+                  "path": "server/runtime/scripts/index.js",
+                  "start_line": 119,
+                  "end_line": 121,
+                  "quote": "this.runSysFunction = (functionName, params) => {\n        return scriptModule.runSysFunction(functionName, params);\n    }",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "server/runtime/scripts/index.js: quote not found in server/runtime/scripts/index.js; 1 unverifiable or duplicate citations removed"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'If an attacker'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "directus",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 5.2,
+            "prompt_tokens": 1202,
+            "largest_prompt_tokens": 1202,
+            "completion_tokens": 110,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 3.5,
+            "prompt_tokens": 1226,
+            "largest_prompt_tokens": 1226,
+            "completion_tokens": 121,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "sentry",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 81.0,
+            "prompt_tokens": 27082,
+            "largest_prompt_tokens": 8143,
+            "completion_tokens": 1195,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 90.5,
+            "prompt_tokens": 27159,
+            "largest_prompt_tokens": 8143,
+            "completion_tokens": 1525,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "budibase",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": true,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 10.4,
+            "prompt_tokens": 1434,
+            "largest_prompt_tokens": 1434,
+            "completion_tokens": 362,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 21.7,
+            "prompt_tokens": 1445,
+            "largest_prompt_tokens": 1445,
+            "completion_tokens": 959,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": [
+            {
+              "id": "F001",
+              "title": "Missing ownership check on group resources",
+              "cwe": "CWE-285",
+              "severity": "low",
+              "summary": "The endpoints `GET /api/global/groups/:groupId` and `POST /api/global/groups/:groupId/apps` allow any user with `builderOrAdmin` privileges to access or modify a group by its `groupId` without verifying that the user has authority over that specific group (e.g., via `proMiddleware.internalGroupOnly`). While the scope of 'Builder' might imply global access in some contexts, it bypasses the ownership check pattern used in other sensitive group endpoints like `DELETE` or `POST .../users`.",
+              "reasoning": "In lines 54-59 and 86-91, the routes only check for `auth.builderOrAdmin` and `proMiddleware.feature.requireFeature(Feature.USER_GROUPS)`. Unlike the `DELETE` (line 50), `POST .../users` (line 69), and `POST .../users/bulk` (line 76) endpoints which use `proMiddleware.internalGroupOnly(\"groupId\")` to ensure the user has rights to that specific group, these endpoints rely solely on the user's general role.",
+              "remediation": "Add `proMiddleware.internalGroupOnly(\"groupId\")` to the middleware chain for the `GET /api/global/groups/:groupId` and `POST /api/global/groups/:groupId/apps` routes to ensure users can only interact with groups they are authorized to manage.",
+              "evidence": [
+                {
+                  "path": "packages/worker/src/api/routes/global/groups.ts",
+                  "start_line": 54,
+                  "end_line": 59,
+                  "quote": ".get(\n    \"/api/global/groups/:groupId\",\n    proMiddleware.feature.requireFeature(Feature.USER_GROUPS),\n    auth.builderOrAdmin,\n    controller.find\n  )",
+                  "role": "missing_check"
+                },
+                {
+                  "path": "packages/worker/src/api/routes/global/groups.ts",
+                  "start_line": 86,
+                  "end_line": 91,
+                  "quote": ".post(\n    \"/api/global/groups/:groupId/apps\",\n    auth.builderOrAdmin,\n    proMiddleware.feature.requireFeature(Feature.USER_GROUPS),\n    controller.updateGroupApps\n  )",
+                  "role": "missing_check"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": ""
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'might'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "better-auth",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 1,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 1,
+            "discarded_bad_citation": 0,
+            "seconds": 51.5,
+            "prompt_tokens": 13182,
+            "largest_prompt_tokens": 5876,
+            "completion_tokens": 1186,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 37.5,
+            "prompt_tokens": 13677,
+            "largest_prompt_tokens": 5861,
+            "completion_tokens": 424,
+            "errors": []
+          },
+          "findings_vulnerable": [
+            {
+              "id": "F001",
+              "title": "Open Redirect via `callbackURL` parameter",
+              "cwe": "CWE-601",
+              "severity": "medium",
+              "summary": "The OAuth proxy callback handler redirects the user to the `callbackURL` parameter found in the `location` header if the origin of the `location` matches the `productionOrigin`. An attacker could potentially craft a malicious redirect URL to perform an open redirect attack, although the check `locationOrigin === productionOrigin` provides some mitigation against cross-origin redirects. However, if the `productionOrigin` is misconfigured or if the attacker can control the `location` header to match the origin, they can redirect users to arbitrary URLs.",
+              "reasoning": "The logic in lines 602-608 takes the `callbackURL` directly from the `location` URL's search parameters and sets it as the `location` header for the response: \n\n```typescript\n602| 4: \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 if (locationOrigin === productionOrigin) {\n603| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 const newLocation = locationURL.searchParams.get(\"callbackURL\");\n604| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 if (!newLocation) {\n605| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 return;\n606| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 }\n607| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 ctx.setHeader(\"location\", newLocation);\n608| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 return;\n609| \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 }\n```\nWhile there is an origin check (`locationOrigin === productionOrigin`), the `newLocation` itself is not validated against an allowlist or checked to ensure it belongs to the same origin, allowing redirects to any URL on the same `\u751f\u4ea7`s",
+              "remediation": "Validate that the `callbackURL` belongs to an allowed list of domains or is a relative path on the same origin before performing the redirect.",
+              "evidence": [
+                {
+                  "path": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+                  "start_line": 602,
+                  "end_line": 609,
+                  "quote": "if (locationOrigin === productionOrigin) {\n\tconst newLocation = locationURL.searchParams.get(\"callbackURL\");\nif (!newLocation) {\n\treturn;\n}\nctx.setHeader(\"location\", newLocation);\nreturn;\n}",
+                  "role": "sink"
+                }
+              ],
+              "origin": "agent",
+              "tier": "suspected",
+              "checks": [
+                {
+                  "name": "evidence",
+                  "passed": true,
+                  "detail": "packages/better-auth/src/plugins/oauth-proxy/index.ts: lines corrected from 602-608"
+                },
+                {
+                  "name": "wording",
+                  "passed": false,
+                  "detail": "hedged: 'could'"
+                },
+                {
+                  "name": "scanner agreement",
+                  "passed": false,
+                  "detail": "no independent scanner was run"
+                }
+              ]
+            }
+          ],
+          "findings_fixed": []
+        },
+        {
+          "id": "airflow",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 9.7,
+            "prompt_tokens": 3225,
+            "largest_prompt_tokens": 3225,
+            "completion_tokens": 133,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 13.0,
+            "prompt_tokens": 3942,
+            "largest_prompt_tokens": 3942,
+            "completion_tokens": 217,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "vendure",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 18.2,
+            "prompt_tokens": 7419,
+            "largest_prompt_tokens": 5709,
+            "completion_tokens": 108,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 18.9,
+            "prompt_tokens": 7966,
+            "largest_prompt_tokens": 5996,
+            "completion_tokens": 108,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "thumbor",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 7.5,
+            "prompt_tokens": 1532,
+            "largest_prompt_tokens": 1532,
+            "completion_tokens": 182,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 6.1,
+            "prompt_tokens": 1534,
+            "largest_prompt_tokens": 1534,
+            "completion_tokens": 101,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "jupyterhub",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 19.5,
+            "prompt_tokens": 4709,
+            "largest_prompt_tokens": 4709,
+            "completion_tokens": 445,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 1,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 20.7,
+            "prompt_tokens": 4704,
+            "largest_prompt_tokens": 4704,
+            "completion_tokens": 599,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        },
+        {
+          "id": "mcp-python-sdk",
+          "detected": false,
+          "detected_at_change": false,
+          "fixed_flagged": false,
+          "pair_correct": false,
+          "other_findings_vulnerable": 0,
+          "other_findings_fixed": 0,
+          "stats_vulnerable": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 15.2,
+            "prompt_tokens": 3821,
+            "largest_prompt_tokens": 2306,
+            "completion_tokens": 360,
+            "errors": []
+          },
+          "stats_fixed": {
+            "leads": 2,
+            "findings": 0,
+            "discarded_bad_citation": 0,
+            "seconds": 19.7,
+            "prompt_tokens": 4332,
+            "largest_prompt_tokens": 2367,
+            "completion_tokens": 414,
+            "errors": []
+          },
+          "findings_vulnerable": [],
+          "findings_fixed": []
+        }
+      ]
+    }
+  ]
+}

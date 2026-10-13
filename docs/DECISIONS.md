@@ -112,6 +112,18 @@ A reviewer that is excellent on one benchmark's templates and blind elsewhere is
 The training code and scripts stay in `experiments/finetune/` as the record of the experiment.
 What would justify another attempt: varied training code with secure twins, and checkpoint selection on code unlike the training set.
 
+### D16 - The project map is an option, not the default (2026-10-13)
+
+E13 fixed the adoption rule before any run: the map becomes the default if pairs correct on the real fixes rise by at least 2 of 24 and fall by no more than 1 on the bakery and on DVWA.
+They fell by 1.0 on the real fixes (3.5 to 2.5, two runs each) and by 2 on DVWA (7 to 5, one map run), so neither condition held.
+`--context map` stays available because it found weaknesses the plain review missed (the bakery's invoice path, FUXA's unprotected Node-RED routes), but it is off by default.
+What would justify revisiting it: a map that follows how real projects apply checks (decorators, middleware, policy services) instead of matching names, measured on the missing-check items, where the plain review finds 1 of 12.
+
+### D17 - Real fixes are the headline benchmark from now on (2026-10-13)
+
+The 24 real fixes (E12) were published after the model was released and come from projects nobody here wrote, so they are the least biased of the three benchmarks.
+The bakery stays for comparing configurations and DVWA as an independent lab, but claims about what Proofer finds in practice are made from E12, which is far lower: 5 of 24 detected and 3.5 pairs correct on average.
+
 ## Open
 
 - O2: Retrieval over public security knowledge. Evidence says it does not raise detection accuracy on open models. Proposed use: explanations and fixes only, plus one small ablation to check the claim on our benchmark.

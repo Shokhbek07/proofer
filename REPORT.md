@@ -11,8 +11,10 @@ All times are local (UTC+5).
 - Each finding carries a tier: `supported` when an independent scanner (Semgrep) reports the same place, otherwise `suspected`.
 - The default model is Gemma 4 26B-A4B (a mixture of experts with about 4B active parameters) running in Ollama on the laptop, with an "analysis first" prompt.
 - On a seeded benchmark written for this project it finds 15 to 17 of 17 weaknesses (mean 16.0 over three runs), with precision 0.94, and tells a weakness apart from its fix in 71 to 88 percent of cases.
-- On DVWA, an independent lab that played no part in writing the prompts, it detects 8 of 10 weaknesses and scores 0.70 to 0.80 on vulnerable/secure pairs, against 4 of 10 and 0.30 for Semgrep.
-- Six results were negative or failed: open-ended reasoning never ended (E2), the first tier definition did not separate true from false findings (E3, E9), a published claim about tool use did not reproduce (E4), a third model did not fit in memory (E8), two defences against planted instructions had no measurable effect (E10), and the fine-tuning experiment did not meet its pre-registered success criterion (E11).
+- On DVWA, an independent lab that played no part in writing the prompts, it detects 7 to 8 of 10 weaknesses and gets 7 to 8 of 10 vulnerable/secure pairs right, against 4 of 10 and 3 for Semgrep.
+- On the hardest test, 24 real security fixes from open-source web projects published after the model was released, it finds 4 to 6 weaknesses at the lines the fix changed and gets 3 to 4 pairs right, against 1 pair for Semgrep and 0 for its own patterns (E12).
+  It finds injection-type weaknesses in real code (4 of 12) and almost no missing checks (1 of 12, never a correct pair), so the bakery and DVWA numbers overstate what it does on real projects.
+- Seven results were negative or failed: open-ended reasoning never ended (E2), the first tier definition did not separate true from false findings (E3, E9), a published claim about tool use did not reproduce (E4), a third model did not fit in memory (E8), two defences against planted instructions had no measurable effect (E10), the fine-tuning experiment did not meet its pre-registered success criterion (E11), and a map of the whole repository, built to catch missing checks, did not meet its adoption rule (E13).
 - The third tier, `confirmed` (reproducing a finding against a local lab container), was designed but not built (section 9).
 - On 2026-10-03 the laptop had a kernel panic in Apple's GPU driver while memory was exhausted by three large models at once; no result was lost (section 8).
 
@@ -112,6 +114,13 @@ Ten modules, each scored as a pair: `low.php` (vulnerable) against `impossible.p
 The modules and their weakness classes were fixed before any model saw them.
 DVWA is GPL-3.0, so it is fetched by `scripts/fetch_dvwa.sh` and not stored in this repository; it is only read as text, never run.
 It checks whether results hold on PHP code that played no part in writing the prompts; it cannot rule out memorisation, since DVWA is widely published.
+
+**Real fixes** (`bench/truth/realworld.yaml`, added 2026-10-03).
+24 GitHub advisories for Python and JavaScript web projects, published from 2026-04-03 to 2026-09-30, after Gemma 4's release on 2026-04-02; 12 injection-type and 12 missing checks.
+They were drawn mechanically from the advisory database (14,698 advisories, 881 in scope), in a seeded random order, then passed through a stated inclusion rule (web code only) and a length limit, with every exclusion listed in the file; all of it before any model saw the code.
+Each project is fetched at the fix commit and its parent (`scripts/fetch_realworld.py`, about 3 GB, read as text only), and only the files the fix modified are reviewed.
+Metrics: `detected` (a finding of the advisory's weakness family in those files), `detected at change` (and quoting lines within 3 of a line the fix changed), `fixed flagged`, and `pairs correct` (detected and not flagged after the fix).
+Other findings are counted but not judged, because real projects have other weaknesses, so precision is not measured here.
 
 **OWASP Benchmark for Python** (commit `f1291485808b66e20ddb6b01b10dc71b3df8c8ba`), used only for E11.
 1,230 small Flask handlers in 14 weakness classes, each labelled real or a safe look-alike.
@@ -353,6 +362,45 @@ On the held-out cases the teacher found none of the insecure cookies, trust-boun
 Caveats: one training run, one seed, one evaluation run per configuration; truncated gradient; the step-600 choice was made after seeing a held-out score; all training code comes from one benchmark in one template style; the student ran through MLX without schema enforcement, so its numbers are not comparable with E3.
 Decision: the tuned model is not used and no adapter ships (D15).
 
+### E12 to E14 - Real fixes, the project map, and repeats
+
+Pre-registered together on 2026-10-03 before any model run, with predictions and an adoption rule for the map.
+Gemma 4 with the analysis-first prompt at temperature 0.7.
+Five seeds per configuration were planned; two ran (seeds 7 and 8), and the bakery and DVWA with the map only one, because each seed needed hours of exclusive use of the laptop and the last stages were stopped for memory (section 7.6).
+The cut was decided after the seed-7 results had been written up.
+
+**E12, real fixes** (no map):
+
+| Configuration | Detected (of 24) | At the changed lines | Fixed still flagged | Pairs correct |
+|---|---|---|---|---|
+| Own patterns | 2 | 1 | 2 | 0 |
+| Semgrep | 2 | 1 | 1 | 1 |
+| Gemma 4, seeds 7 and 8 | 4, 6 | 4, 6 | 3, 4 | 3, 4 |
+
+Predicted: 8 to 12 detected, 5 to 8 at the changed lines, 3 to 6 pairs correct; the result is below or at the bottom of each range.
+Injection group: 4.0 of 12 at the changed lines on average, 3.5 pairs correct.
+Missing-check group: 1 of 12 (Lemur's credential endpoints) in each run, and 0 pairs correct in all four runs with and without the map.
+Found in both runs: the path traversal in atomic-agents-stack, the XSS in CyberChef, the `eval` in django-haystack, and Lemur; never found: 18 of 24, including every other authorisation, origin and CSRF item.
+
+**E13, the project map** (`--context map`): a deterministic map of entry points, the protections their peers use, and definitions from other files, added to each prompt.
+
+| | No map | Map |
+|---|---|---|
+| Real fixes, pairs correct (of 24) | 3, 4 | 2, 3 |
+| Real fixes, at the changed lines | 4, 6 | 4, 3 |
+| Bakery, pair accuracy | 0.824, 0.824 | 0.882 (one run) |
+| DVWA, pairs correct (of 10) | 7, 7 | 5 (one run) |
+
+The rule required +2 pairs on the real fixes and no more than 1 lost elsewhere; it got -1 and -2, so the map is not the default (D16).
+It found two things the plain review missed (the bakery's invoice path, FUXA's unprotected routes) and flagged two secure DVWA modules; none of the real missing checks it was built for.
+
+**E14, stability.** Bakery: 15 and 15 found, pair accuracy 0.824 both times; with E6 the five runs at temperature 0.7 range from 15 to 17 found and 0.706 to 0.882 pair accuracy.
+DVWA: 8 and 7 detected, 7 pairs correct both times.
+Real fixes: 4 and 6 detected, 3 and 4 pairs correct.
+All inside the predicted ranges; two runs give a range, not a distribution.
+
+Real-fix runs took 100 to 108 minutes on 2026-10-08 and 29 to 36 minutes on 2026-10-13 for the same work, probably because of swapping; timings from this batch are not comparable.
+
 ## 7. Everything that went wrong
 
 ### 7.1 Negative and failed experiments
@@ -367,6 +415,9 @@ Decision: the tuned model is not used and no adapter ships (D15).
 | E8 | Qwen3.8-27B did not fit: 20 GB swap, five to six times slower | Gemma stays the default |
 | E10 | Neither defence against planted instructions had a measurable effect | Structural defence relied on instead (D14) |
 | E11 | Training did not fit; the tuned model met the criterion at neither checkpoint | Model not shipped (D15) |
+| E12 | Real fixes: below the predicted range; 0 missing checks fixed correctly | Real fixes become the headline benchmark (D17) |
+| E13 | The project map lost pairs on the real fixes and DVWA | Kept as an option, not the default (D16) |
+| E14 | Only two of five planned seeds ran | Reported as ranges over two runs |
 
 ### 7.2 Bugs found while building and evaluating
 
@@ -382,6 +433,10 @@ Decision: the tuned model is not used and no adapter ships (D15).
 - Semgrep failed in every run started from the Terminal panel on 2026-10-03, because the shell profile sets `SSL_CERT_FILE` from `python3 -m certifi`, and Homebrew's Python 3.14 has no certifi, which leaves the variable empty.
   Proofer now drops an empty value before calling Semgrep.
   This affected only the `supported` tier of the E11 student runs, which no score uses.
+- Files longer than 400 lines were cut at line 400, so the rest was never reviewed; no bakery or DVWA file is that long, so it surfaced only with real projects.
+  Long files are now reviewed in overlapping 400-line windows.
+- The lookup of helper definitions searched the whole repository once per imported name, which took minutes per file on Sentry; it is now one pass with identical output, checked on all 60 bakery and DVWA prompts.
+- The scorer matches CWE families, and the model sometimes labels with a CWE outside the family: CyberChef's prototype pollution came back as CWE-132 and CWE-1322 and did not count (E12).
 
 ### 7.3 Tooling and environment problems
 
@@ -400,8 +455,8 @@ The plan was reordered to do the stability, independent-target and baseline chec
 
 ### 7.5 Measurement weaknesses
 
-- Most configurations ran once; only E6 measures spread.
-  A difference of one weakness or one DVWA module is within noise.
+- Most configurations ran once; E6 and E14 measure spread, with three and two runs.
+  A difference of one weakness or one DVWA module is within noise, and on the real fixes one item is about 4 points.
 - The seeded benchmark, the patterns and the prompts share an author.
 - The analysis-first prompt and the two E7 fixes were written after seeing results; DVWA was clean for the first comparison only.
 - Timing numbers from 2026-10-03 may include slowdown from an unrelated process (section 8).
@@ -425,6 +480,9 @@ That limit shaped the design more than any other constraint.
   The exact gradient through its recurrent layers would need about 300 GB, so a truncated gradient was used, and the tuned model is a product of that approximation (E11).
 - **Speed, and therefore sample size.** A bakery scan takes about 4 to 12 minutes, one pass over the 24 real fixes about 100 minutes, and one seed of the E12 to E14 batch about 4 hours 40 minutes.
   The five pre-registered seeds need about 23 hours of exclusive use of the machine, which is why most results are single runs (section 7.5).
+- **Swap under one model.** On 2026-10-13, with only Gemma loaded (16.8 GB), swap grew from 5 GB to 15.5 GB of 16 GB in four minutes while free memory stayed at 8 to 14 percent, and the screen had misbehaved during an earlier run that morning.
+  The run was stopped by hand, then restarted under a watch that stops a stage when swap grows by more than 4 GB; it tripped again within three minutes, so the last two map stages were not run and E14 was cut from five seeds to two.
+  Nothing crashed and no result was lost; the readings are in `results/followup/memory-watch-20261013.log`.
 
 What more memory would change: running a larger model or a second model as a check, longer contexts so related files are reviewed together, and enough repeats for every result to carry a spread.
 
@@ -483,6 +541,8 @@ The code fix written seconds before the crash, the step-600 adapter (checksum ch
 | D13 | `supported` means Semgrep reports the same place |
 | D14 | Comments stay visible; the defence is what the agent cannot do |
 | D15 | The fine-tuned small model is not used |
+| D16 | The project map is an option, not the default |
+| D17 | Real fixes are the headline benchmark |
 
 Open: O2, retrieval over public security knowledge (evidence says it does not improve detection; possible use for explanations only), and O7, the `confirmed` tier.
 
@@ -490,8 +550,9 @@ Open: O2, retrieval over public security knowledge (evidence says it does not im
 
 - The `confirmed` tier (section 7.4).
 - Dependency vulnerability scanning: dependency files are reviewed by the model like other files, but no advisory database is consulted.
-- Context across files is limited to the definitions of imported local helpers; weaknesses judged against something outside the file (CSRF tokens, session id quality, ownership rules defined elsewhere) are the common misses.
-- No test on a large real-world repository, and no splitting of very large files.
+- Missing checks in real code: 1 of 12 found and none fixed correctly (E12).
+  Context across files is limited to imported helper definitions and the optional project map, which did not help (E13); weaknesses judged against something outside the file (authorisation policies, CSRF and origin handling, ownership rules defined elsewhere) are the common misses.
+- Three of five planned repeats (E14), and the seed-8 bakery and DVWA runs with the map.
 - No retrieval (O2), no SARIF output, no interface beyond the command line.
 
 ## 11. Timeline
@@ -524,6 +585,12 @@ Open: O2, retrieval over public security knowledge (evidence says it does not im
 | 09:15 to 10:23 | Step-600 checkpoint and teacher runs |
 | 11:34 | Second local commit, `d7d3771` |
 | 11:39 to 11:40 | GitHub repository created private, then made public by Shokhbek |
+| 10-03 afternoon | Real-fix benchmark selected and fetched, project map and repeats built, E12 to E14 pre-registered, no-model baselines run |
+| 10-08 01:10 to 06:49 | E12 to E14 seed 7, all six configurations; paused during seed 8 |
+| 10-13 09:26 to 09:33 | Commits `aeec0fe` and `c9a3887` |
+| 10-13 10:16 to 11:52 | Seed 8: real fixes with and without the map, bakery and DVWA without it; one stage stopped for the screen problem at 10:46 and rerun |
+| 10-13 11:52 to 12:26 | Swap grows under one model; bakery with the map stopped by hand, then by the memory watch; repeats cut to two seeds |
+| 10-13 afternoon | E12 to E14 written up |
 
 ## 12. Reproducing
 

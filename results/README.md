@@ -76,3 +76,10 @@ A `-map` suffix means `--context map`.
 | `realworld-gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261008-052311.json` | E13 | Real fixes, map, seed 7 |
 | `gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261008-054947.json` | E13 | Bakery, map, seed 7 |
 | `dvwa-gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261008-060627.json` | E13 | DVWA, map, seed 7 |
+| `realworld-gemma4_26b-a4b-it-qat-judge-walkthrough-20261013-104622.json` | E12, E13, E14 | Real fixes, no map, seed 8 |
+| `gemma4_26b-a4b-it-qat-judge-walkthrough-20261013-110951.json` | E13, E14 | Bakery, no map, seed 8 |
+| `dvwa-gemma4_26b-a4b-it-qat-judge-walkthrough-20261013-111421.json` | E13, E14 | DVWA, no map, seed 8 |
+| `realworld-gemma4_26b-a4b-it-qat-judge-walkthrough-map-20261013-115207.json` | E13 | Real fixes, map, seed 8 |
+| `memory-watch-20261013.log` | E12 to E14 | Free memory, swap and GPU use sampled while the seed-8 stages ran, including both stops of `bakery-map-8` |
+
+Planned and not run: seeds 9 to 11 (cut, see the deviation in E14), and the seed-8 bakery and DVWA runs with the map (stopped by the memory watch).

@@ -16,6 +16,8 @@
 set -u
 MODEL=gemma4:26b-a4b-it-qat
 FREE=68
+# Seeds to run; E14 planned 7 to 11, and the run was cut to 7 and 8 (see E14).
+SEEDS=${SEEDS:-7 8}
 LOG=runs/followup
 OUT=runs/followup/eval
 mkdir -p "$LOG/done" "$OUT"
@@ -51,7 +53,7 @@ run() {
 run real-patterns 0 eval-real --mode patterns
 run real-semgrep 0 eval-real --mode semgrep
 
-for seed in 7 8 9 10 11; do
+for seed in $SEEDS; do
     for context in none map; do
         run "real-$context-$seed" $FREE eval-real --model $MODEL --temperature 0.7 --seed $seed \
             --context $context

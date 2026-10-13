@@ -597,3 +597,127 @@ With Docker stopped this machine idles at about 74 percent free, so a 75 percent
 The model is still unloaded after every stage, so only one large model is ever loaded.
 
 Raw files: `results/followup/`.
+
+**Deviation, decided 2026-10-13 after seed 7 and part of seed 8 had run.**
+Each Gemma run holds about 16 GB of the shared 24 GB and keeps the GPU busy, and on 2026-10-13 the screen misbehaved during a run.
+To finish before the deadline in one unattended overnight run, the repeats were cut from five seeds to two, 7 and 8.
+E13 and E14 are therefore reported over two runs per configuration, and the adoption rule is applied to the two-run means.
+The seed-7 results above had already been written up when this was decided, so the cut was made knowing them.
+It was driven by machine time and the screen problem, not by those numbers, but that cannot be proven, so it is stated.
+
+### E12 to E14 - Results (2026-10-13)
+
+**What ran.** Seeds 7 and 8 for the real fixes, with and without the map, and for the bakery and DVWA without the map.
+The bakery and DVWA with the map have seed 7 only.
+`bakery-map-8` was started twice on 2026-10-13 and stopped both times by a memory watch, and `dvwa-map-8` never ran:
+
+- With only Gemma loaded (16.8 GB resident), swap grew from 5.0 GB to 15.5 GB of 16 GB in about 4 minutes, while free memory stayed at 8 to 14 percent; macOS was pushing everything else out to make room.
+- The run was stopped by hand, Gemma unloaded, and swap fell back to about 4 GB.
+- On the restart a guard stopped the stage automatically when swap grew by more than 4 GB; it grew from 3.9 GB to 9.7 GB in under 3 minutes.
+- No crash, no lost result file; the stopped stage left no partial result.
+- Earlier stages ran unwatched, so it is unknown whether they swapped the same way.
+
+Machine time was not stable either: the seed-7 real-fix runs (2026-10-08, overnight) took 100 and 108 minutes, the seed-8 ones (2026-10-13, morning) 29 and 36 minutes, for the same work.
+The cause was not measured; swapping is the likely one.
+Timing numbers from this batch are therefore not comparable with each other or with earlier experiments.
+
+All model scans finished without an error.
+The largest prompt was 8,143 tokens without the map and 10,803 with it, inside the 12,288 left for the prompt.
+
+#### E12 - Real fixes
+
+Two runs at temperature 0.7, no map; baselines are single deterministic runs.
+
+| Configuration | Detected (of 24) | At the changed lines | Fixed version still flagged | Pairs correct |
+|---|---|---|---|---|
+| Own patterns | 2 | 1 | 2 | 0 |
+| Semgrep | 2 | 1 | 1 | 1 |
+| Gemma 4, seed 7 | 4 | 4 | 3 | 3 |
+| Gemma 4, seed 8 | 6 | 6 | 4 | 4 |
+| Gemma 4, mean | 5.0 | 5.0 | 3.5 | 3.5 |
+
+By group, Gemma means: injection 4.0 of 12 at the changed lines and 3.5 pairs correct; missing checks 1.0 of 12 at the changed lines and 0 pairs correct, in every run.
+Other findings in the reviewed files: 8.5 on the vulnerable side and 6.5 on the fixed side, per run.
+
+Per item (no map, two runs):
+
+- Found at the changed lines in both runs: atomic-agents-stack (path traversal), CyberChef (the HTML-table XSS), django-haystack (`eval`), Lemur.
+- Found in one run: mistune, Weblate (the prefix check in `utils/files.py`).
+- Lemur, the one missing-check item ever found, is never a correct pair: on the fixed side the model reports the `DestinationsStats` endpoint, which the fix left without the admin check it added to the other three.
+  That endpoint returns counts, not credentials, so the finding is arguable; the scorer counts it against the pair.
+- Never found: 18 items, including every authorisation item except Lemur (Airflow, Budibase, Directus, FUXA, Sentry, Vendure), every origin and CSRF item (better-auth, JupyterHub, MCP SDK), Fastify, Thumbor, the path checks in Hono, Taipy, Ghost and n8n, Feathers' prototype pollution, PyJWT's redirect and Flowise's SSRF bypass.
+- Flagged only on the fixed side: Budibase (an IDOR claim on the group routes, both runs), FUXA (seed 8), mistune (seed 7).
+
+Two scoring effects, both visible in the raw files:
+
+- The model labels CyberChef's prototype pollution CWE-132 and CWE-1322, neither in the item's family, so those findings do not count; CyberChef is credited through its second weakness, the XSS.
+  The same labels on the fixed side are why it is not marked as still flagged there.
+- django-haystack's fixed side is flagged in seed 8 by a different finding of the same family (Elasticsearch query string injection, CWE-94), which family matching cannot tell apart from the `eval` fix.
+
+**Against the prediction:** I expected 8 to 12 detected, 5 to 8 at the changed lines and 3 to 6 pairs correct.
+Detection came in below the range (4 and 6), at the changed lines at the bottom (4 and 6), and pairs at the bottom (3 and 4).
+The missing-check group is where it fails: 0 pairs correct in 4 runs, with or without the map.
+
+#### E13 - The map
+
+| | No map | Map |
+|---|---|---|
+| Real fixes, runs | seeds 7, 8 | seeds 7, 8 |
+| Detected (of 24) | 4, 6 (mean 5.0) | 5, 5 (5.0) |
+| At the changed lines | 4, 6 (5.0) | 4, 3 (3.5) |
+| Fixed still flagged | 3, 4 (3.5) | 4, 3 (3.5) |
+| Pairs correct | 3, 4 (3.5) | 2, 3 (2.5) |
+| Bakery, runs | seeds 7, 8 | seed 7 |
+| Found (of 17) | 15, 15 | 16 |
+| Precision | 0.938, 0.833 | 1.000 |
+| Decoys flagged | 1, 3 | 0 |
+| Pairs correct (of 17) | 14, 14 | 15 |
+| DVWA, runs | seeds 7, 8 | seed 7 |
+| Detected (of 10) | 8, 7 | 7 |
+| Secure flagged | 1, 0 | 2 |
+| Pairs correct (of 10) | 7, 7 | 5 |
+
+**Against the adoption rule: not met, on both conditions.**
+Pairs correct on the real fixes fell by 1.0 (3.5 to 2.5) instead of rising by 2, and DVWA fell by 2 (7 to 5, one map run) against an allowance of 1.
+The map stays an option and is not the default (D16).
+
+What the map did:
+
+- On the real fixes it found FUXA's unauthenticated Node-RED routes in both runs, which no run without it found, but not at the changed lines, and the fixed side was flagged too.
+  It lost mistune and Weblate at the changed lines.
+- On the bakery (one run) it found the invoice path traversal (V04), missed in both runs without it, and flagged no decoys.
+- On DVWA (one run) it flagged the secure versions of `exec` and `upload`, which have no peers that look like them; the map's peer list seems to have pushed the model to report differences that are not weaknesses.
+- None of the missing-check misses it was built for (Budibase, Airflow, Directus, Sentry and the others) was found.
+  The guard comparison works on the bakery, where handlers share a file and a style; real projects spread a check across decorators, middleware, services and policy classes that a name-based map does not connect.
+
+The map comparison on the bakery and DVWA rests on one run, and a one-module difference on DVWA is within noise; the real-fix comparison has two runs per arm.
+
+#### E14 - Stability
+
+| Target, no map, temperature 0.7 | Seed 7 | Seed 8 | Earlier |
+|---|---|---|---|
+| Bakery found (of 17) | 15 | 15 | 16 (E5, temperature 0); 16, 17, 15 (E6) |
+| Bakery precision | 0.938 | 0.833 | 0.889 (E5); 0.941, 0.944, 0.938 (E6) |
+| Bakery pair accuracy | 0.824 | 0.824 | 0.882 (E5); 0.882, 0.882, 0.706 (E6) |
+| DVWA detected (of 10) | 8 | 7 | 8 (E7, E8) |
+| DVWA pairs correct (of 10) | 7 | 7 | 8 (E7), 7 (E8) |
+| Real fixes detected (of 24) | 4 | 6 | none |
+| Real fixes pairs correct | 3 | 4 | none |
+
+Against the prediction (bakery 15 to 17 found and 0.71 to 0.88 pair accuracy, DVWA 7 to 9, real fixes within about 2 items): all inside.
+Across the five bakery runs at temperature 0.7 now on record (E6 and E14), found ranges from 15 to 17 and pair accuracy from 0.706 to 0.882.
+The same weaknesses are missed in both new runs: V04 (invoice path) and V06 (quantity); V05's cookie is flagged on the patched twin every time, as in E6.
+On DVWA, `weak_id` and `xss_s` were missed in both runs, and `csrf` and `upload` changed between runs.
+
+Two runs give a range, not a distribution; the plan was five (see the deviation above).
+
+**Learned:**
+
+- On real code published after the model, Proofer finds about a fifth of the weaknesses and gets 3 to 4 of 24 pairs right, ahead of Semgrep (1) and its own patterns (0) but far below its bakery and DVWA numbers.
+  The benchmarks it was developed on overstate what it does on real projects.
+- It finds injection-type weaknesses in real code (4 of 12 at the changed lines) and almost no missing checks (1 of 12, never a correct pair).
+  The miss that E3 identified on the bakery is the main gap on real code.
+- A name-based project map does not close that gap, and on DVWA it cost two pairs.
+- The bakery and DVWA headline numbers hold within the ranges already reported.
+
+Raw files: `results/followup/`; tables from `scripts/summarise_runs.py results/followup/*.json`.
