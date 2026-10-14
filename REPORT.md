@@ -10,13 +10,16 @@ All times are local (UTC+5).
 - Proofer reviews a repository with a local model, one file at a time, and reports weaknesses whose quoted lines are checked against the file.
 - Each finding carries a tier: `supported` when an independent scanner (Semgrep) reports the same place, otherwise `suspected`.
 - The default model is Gemma 4 26B-A4B (a mixture of experts with about 4B active parameters) running in Ollama on the laptop, with an "analysis first" prompt.
-- On a seeded benchmark written for this project it finds 15 to 17 of 17 weaknesses (mean 16.0 over three runs), with precision 0.94, and tells a weakness apart from its fix in 71 to 88 percent of cases.
-- On DVWA, an independent lab that played no part in writing the prompts, it detects 7 to 8 of 10 weaknesses and gets 7 to 8 of 10 vulnerable/secure pairs right, against 4 of 10 and 3 for Semgrep.
-- On the hardest test, 24 real security fixes from open-source web projects published after the model was released, it finds 4 to 6 weaknesses at the lines the fix changed and gets 3 to 4 pairs right, against 1 pair for Semgrep and 0 for its own patterns (E12).
-  It finds injection-type weaknesses in real code (4 of 12) and almost no missing checks (1 of 12, never a correct pair), so the bakery and DVWA numbers overstate what it does on real projects.
+- The headline test is 24 real security fixes from open-source web projects, published after the model was released (E12, D17).
+  Proofer finds 4 to 6 of the weaknesses at the lines the fix changed and gets 3 to 4 vulnerable/fixed pairs right, against 1 pair for Semgrep and 0 for its own patterns.
+  It finds injection-type weaknesses in real code (3 to 5 of 12) and almost no missing checks (1 of 12, never a correct pair).
+- On the two easier benchmarks the numbers are much higher, which shows how far they overstate performance on real projects:
+  - On a seeded benchmark written for this project it finds 15 to 17 of 17 weaknesses over five runs (mean 15.6), with precision 0.83 to 0.94, and tells a weakness apart from its fix in 71 to 88 percent of cases.
+  - On DVWA, an independent lab that played no part in writing the prompts, it detects 7 to 8 of 10 weaknesses and gets 7 to 8 of 10 vulnerable/secure pairs right, against 4 of 10 and 3 for Semgrep.
 - Seven results were negative or failed: open-ended reasoning never ended (E2), the first tier definition did not separate true from false findings (E3, E9), a published claim about tool use did not reproduce (E4), a third model did not fit in memory (E8), two defences against planted instructions had no measurable effect (E10), the fine-tuning experiment did not meet its pre-registered success criterion (E11), and a map of the whole repository, built to catch missing checks, did not meet its adoption rule (E13).
-- The third tier, `confirmed` (reproducing a finding against a local lab container), was designed but not built (section 9).
+- The third tier, `confirmed` (reproducing a finding against a local lab container), was designed but not built (section 7.4, O7).
 - On 2026-10-03 the laptop had a kernel panic in Apple's GPU driver while memory was exhausted by three large models at once; no result was lost (section 8).
+- Proofer was built with Claude Code as coding assistant, directed by Shokhbek, who made the design decisions (section 7.4).
 
 ## 2. The brief and the constraints
 
